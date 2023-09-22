@@ -864,24 +864,24 @@ for ss=1:N_Samp
         Population.Sex.Male(:,yy)=squeeze(temp_male_v(:,yy,ss));
         Population.Sex.Female(:,yy)=squeeze(temp_female_v(:,yy,ss));
         
-        Population.Age.Range_18_to_34(:,yy)=temp_18_34(jj);
-        Population.Age.Range_35_to_49(:,yy)=temp_35_49(jj);
-        Population.Age.Range_50_to_64(:,yy)=temp_50_64(jj);
-        Population.Age.Range_65_and_older(:,yy)=temp_65_over(jj);          
+        Population.Age.Range_18_to_34(:,yy)=temp_18_34;
+        Population.Age.Range_35_to_49(:,yy)=temp_35_49;
+        Population.Age.Range_50_to_64(:,yy)=temp_50_64;
+        Population.Age.Range_65_and_older(:,yy)=temp_65_over;          
 
-        Population.Education.Less_than_High_School(:,yy)=temp_LHS(jj);          
-        Population.Education.High_School(:,yy)=temp_HS(jj);          
-        Population.Education.College(:,yy)=temp_C(jj);     
+        Population.Education.Less_than_High_School(:,yy)=temp_LHS;          
+        Population.Education.High_School(:,yy)=temp_HS;          
+        Population.Education.College(:,yy)=temp_C;     
         
         Population.Race.White(:,yy)=squeeze(temp_white_v(:,yy,ss));          
         Population.Race.Black(:,yy)=squeeze(temp_black_v(:,yy,ss));          
         Population.Race.Other(:,yy)=squeeze(temp_other_v);
         
         
-        Population.Economic.Lower(:,yy)=temp_lower(jj);
-        Population.Economic.Working(:,yy)=temp_working(jj);
-        Population.Economic.Middle(:,yy)=temp_middle(jj);
-        Population.Economic.Upper(:,yy)=temp_upper(jj);
+        Population.Economic.Lower(:,yy)=temp_lower;
+        Population.Economic.Working(:,yy)=temp_working;
+        Population.Economic.Middle(:,yy)=temp_middle;
+        Population.Economic.Upper(:,yy)=temp_upper;
         
         Population.Income(:,yy)=squeeze(temp_income_house_v(:,yy,ss));
             

@@ -27,7 +27,7 @@ clearvars -except County_ID County_State_FIP
 rng(2023921)
 
 W=readtable('Supplement_Table_Model_Comparison.xlsx','Sheet','Table_All');
-W=table2array(W(:,16:19));
+W=table2array(W(:,20));
 N_Samp=30;
 Rand_Indx=randi(1000,N_Samp,1);
 Rand_Trust_S=randi(1000,N_Samp,2);
@@ -157,9 +157,9 @@ for kk=1:4
         end
     end
 
-    dvdm=(W(:,kk)')*dvdm_v;
-    dvds=(W(:,kk)')*dvds_v;
-    dvdu=(W(:,kk)')*dvdu_v;
-    vac_d=(W(:,kk)')*Vac_v;
-    save(['Impact_Trust_Medicine_Science_on_Uptake_' Inqv{kk} '_' num2str(Yr) '.mat'],'dvds','dvdm','dvdu','vac_d');
+    dvdm=(W')*dvdm_v;
+    dvds=(W')*dvds_v;
+    dvdu=(W')*dvdu_v;
+    vac_d=(W')*Vac_v;
+    save(['Impact_Trust_Medicine_Science_on_Uptake_' Inqv{kk} '_' num2str(Yr) '_Overall_Weight.mat'],'dvds','dvdm','dvdu','vac_d');
 end
