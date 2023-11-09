@@ -1,7 +1,5 @@
 clear;
 clc;
-close all;
-
 
 S=shaperead([pwd '\State_Data\County_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 State_FIPc={S.STATEFP};
@@ -28,7 +26,7 @@ rng(2023921)
 
 W=readtable('Supplement_Table_Model_Comparison.xlsx','Sheet','Table_All');
 W=table2array(W(:,16:19));
-N_Samp=100;
+N_Samp=30;
 Rand_Indx=randi(1000,N_Samp,1);
 Rand_Trust_S=randi(1000,N_Samp,2);
 Rand_Trust_M=randi(1000,N_Samp,2);
@@ -39,7 +37,6 @@ X_County(:,:,1)=1;
 
 Inqv={'MMR','DTaP','Polio','VAR'};
 
-Vac_up=NaN.*zeros(length(County_ID),length(Inqv));
 Yr=2021;
 % COVID
 if(Yr>=2020)
@@ -51,6 +48,7 @@ X_County(:,:,3)=repmat(PE',N_Samp,1);
 X_County(:,:,4)=repmat(RE',N_Samp,1);
 
 
+Vac_up=NaN.*zeros(length(County_ID),length(Inqv));
 State_FIP=unique(County_State_FIP);
 Vac_up_State=NaN.*zeros(length(State_FIP),4);
 for kk=1:4
@@ -59,6 +57,7 @@ end
 for kk=1:4
     Vac_up(:,kk)=County_Immunization_Statistics(Inqv{kk},Yr,County_ID);
 end
+
 Var_Name={'Economic','Education','Income','Political','Race','Sex','Trust_in_Medicine','Trust_in_Science','Uninsured_19_under'};
 
 for ss=1:N_Samp       
@@ -83,10 +82,38 @@ end
 
 X_County=mean(X_County,1);
 X_County=squeeze(real(X_County));
+
+
+
 m=1./(1+exp(-X_County(:,11)));
 s=1./(1+exp(-X_County(:,12)));
 u=1./(1+exp(-X_County(:,13)));
-beta_m_to_s=0.18961742428440753; % obtained from bayesian network analysis
+
+
+vac_vt=linspace(10^(-8),0.99-10^(-8),201);
+dx=zeros(1,201);
+for jj=1:201
+    z=log(vac_vt(jj)/(1-vac_vt(jj)));
+    if(jj>1)
+        dx(jj)=lsqnonlin(@(x)(1./(1+exp(-(z+x)))-(vac_vt(jj)+0.01)),dx(jj-1),0,25);
+    else
+        
+        dx(jj)=lsqnonlin(@(x)(1./(1+exp(-(z+x)))-(vac_vt(jj)+0.01)),14,0,25);
+    end
+end
+
+vac95_t=linspace(10^(-8),0.95-10^(-8),201);
+dx_95=zeros(1,201);
+for jj=1:201
+    z=log(vac95_t(jj)/(1-vac95_t(jj)));
+    if(jj>1)
+        dx_95(jj)=lsqnonlin(@(x)(1./(1+exp(-(z+x)))-(0.95)),dx_95(jj-1),0,25);
+    else
+        
+        dx_95(jj)=lsqnonlin(@(x)(1./(1+exp(-(z+x)))-(0.95)),21.5,0,25);
+    end
+end
+
 
 load([pwd '\State_Data\County_Data\County_Population_' num2str(randi(1000)) '.mat']);
 Data_CID=Population.County_ID_Numeric;
@@ -95,23 +122,28 @@ PS=Population.Sex;
 P_tot=PS.Male(:,Yr==Data_Year)+PS.Female(:,Yr==Data_Year);
 
 clear Data_Year PS 
+
 for kk=1:4
     Vac_v=zeros(size(W,1),length(County_ID));
-    dvdm_v=zeros(size(W,1),length(County_ID));
-    dvds_v=zeros(size(W,1),length(County_ID));
-    dvdu_v=zeros(size(W,1),length(County_ID));
+    dm_v=NaN.*zeros(size(W,1),length(County_ID));
+    ds_v=NaN.*zeros(size(W,1),length(County_ID));
+    du_v=NaN.*zeros(size(W,1),length(County_ID));
+
+    dm95_v=NaN.*zeros(size(W,1),length(County_ID));
+    ds95_v=NaN.*zeros(size(W,1),length(County_ID));
+    du95_v=NaN.*zeros(size(W,1),length(County_ID));
+
+    beta_m=NaN.*zeros(size(W,1),1);
+    beta_s=NaN.*zeros(size(W,1),1);
+    beta_u=NaN.*zeros(size(W,1),1);
     
     beta_v=readtable('County_Level_Cross_Validation.xlsx','Sheet',['Coefficients_' Inqv{kk} ]);
     for ii=1:height(beta_v)
-        v=Vac_up(:,kk);
-        tc_nan=~isnan(v);
+
+        vt=Vac_up(:,kk);
+        tc_nan=~isnan(vt);
         beta_j=table2array(beta_v(ii,:))';
         y_pred=X_County*(beta_j);
-        v_t=v;
-        v_t(v==1)=1-10^(-8);
-        v_t(v==0)=10^(-8);
-        y_temp=log(v_t./(1-v_t));
-
 
         for ff=1:length(State_FIP)
             t_fs=State_FIP(ff)==County_State_FIP;
@@ -136,30 +168,64 @@ for kk=1:4
             end
         end
         
-        beta_m=beta_j(11);
-        beta_s=beta_j(12);
-        beta_u=beta_j(13);
-
-        z_temp=1./(1+exp(-y_pred));
-        
-        v(~tc_nan)=z_temp(~tc_nan);
-         
-
+        v=1./(1+exp(-y_pred));
+        v(~isnan(vt))=vt(~isnan(vt));
         Vac_v(ii,:)=v;
-        if(beta_m^2+beta_s^2>0)
-            dvdm_v(ii,:) = Trust_Medicine_Influence_Uptake(v,m,beta_m,beta_m_to_s,beta_s);
+        dx_t=pchip(vac_vt,dx,v);
+
+        dx95_t=pchip(vac95_t,dx_95,v);
+        dx95_t(v>=0.95)=0;
+
+        if(beta_j(11)~=0)
+            beta_m(ii)=beta_j(11);
+            temp_dX=dx_t./beta_m(ii);
+            temp_X=X_County(:,11)+temp_dX;
+            dm_v(ii,:)=1./(1+exp(-temp_X))-m;
+
+            temp_dX=dx95_t./beta_m(ii);
+            temp_X=X_County(:,11)+temp_dX;
+            dm95_v(ii,:)=1./(1+exp(-temp_X))-m;
         end
-        if(beta_s~=0)
-            dvds_v(ii,:) = Trust_Science_Influence_Uptake(v,s,beta_s);
+
+        if(beta_j(12)~=0)
+            beta_s(ii)=beta_j(12);
+            temp_dX=dx_t./beta_s(ii);
+            temp_X=X_County(:,12)+temp_dX;
+            ds_v(ii,:)=1./(1+exp(-temp_X))-s;
+
+            temp_dX=dx95_t./beta_s(ii);
+            temp_X=X_County(:,12)+temp_dX;
+            ds95_v(ii,:)=1./(1+exp(-temp_X))-s;
         end
-        if(beta_u~=0)
-            dvdu_v(ii,:) = Trust_Science_Influence_Uptake(v,u,beta_u);
+
+        if(beta_j(11)~=0)
+            beta_u(ii)=beta_j(13);
+            temp_dX=dx_t./beta_u(ii);
+            temp_X=X_County(:,13)+temp_dX;
+            du_v(ii,:)=1./(1+exp(-temp_X))-u;
+
+            temp_dX=dx95_t./beta_u(ii);
+            temp_X=X_County(:,13)+temp_dX;
+            du95_v(ii,:)=1./(1+exp(-temp_X))-u;
         end
     end
 
-    dvdm=(W(:,kk)')*dvdm_v;
-    dvds=(W(:,kk)')*dvds_v;
-    dvdu=(W(:,kk)')*dvdu_v;
-    vac_d=(W(:,kk)')*Vac_v;
-    save(['Impact_Trust_Medicine_Science_on_Uptake_' Inqv{kk} '_' num2str(Yr) '.mat'],'dvds','dvdm','dvdu','vac_d');
+    wt=W(~isnan(beta_m),kk)';
+    wt=wt./sum(wt);
+    dm=wt*dm_v(~isnan(beta_m),:);
+    dm95=wt*dm95_v(~isnan(beta_m),:);
+
+    wt=W(~isnan(beta_s),kk)';
+    wt=wt./sum(wt);
+    ds=wt*ds_v(~isnan(beta_s),:);
+    ds95=wt*ds95_v(~isnan(beta_s),:);
+
+    wt=W(~isnan(beta_u),kk)';
+    wt=wt./sum(wt);
+    du=wt*du_v(~isnan(beta_u),:);
+    du95=wt*du95_v(~isnan(beta_u),:);
+    
+    wt=W(:,kk)';
+    vac_d=wt*Vac_v;
+    save(['Increase_in_Covariate_Required_for_' Inqv{kk} '_' num2str(Yr) '.mat'],'du95','dm95','ds95','du','dm','ds','vac_d');
 end

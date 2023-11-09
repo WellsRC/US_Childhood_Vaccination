@@ -55,16 +55,18 @@ VL_State=cell(length(Yr),2);
 P_E_State=cell(length(Yr),1);
 ID_State_v=cell(length(Yr),1);
 COVID_State=cell(length(Yr),1);
+Yr_State=cell(length(Yr),1);
 
 D_County=cell(length(Yr),length(Var_Name_Demo));
 X_County=cell(length(Yr),length(Var_Name));
 P_E_County=cell(length(Yr),1);
 ID_County_v=cell(length(Yr),1);
 COVID_County=cell(length(Yr),1);
+Yr_County=cell(length(Yr),1);
 VL_County=cell(length(Yr),2);
 
 
-N_Samp=30;
+N_Samp=50;
 Rand_Indx=randi(1000,N_Samp,1);
 Rand_Trust_S=randi(1000,N_Samp,2);
 Rand_Trust_M=randi(1000,N_Samp,2);
@@ -73,6 +75,8 @@ VN={'Vaccine_Disease','ID','County_Level','Year','Vaccine_Uptake','Trust_in_Medi
 for kk=1:4  
     for ss=1:N_Samp
         Inq=Inqv{kk};
+
+        YrData_Table=[];
         for yy=1:length(Yr)
             temp=State_Immunization_Statistics(Inq,Yr(yy),State_ID);    
             [RVE,PVE] = Exemption_Timeline(Yr(yy),State_ID);
@@ -96,6 +100,7 @@ for kk=1:4
                 COVID_State{yy}=zeros(size(temp(~isnan(temp))));
             end
             
+            Yr_State{yy}=Yr(yy).*ones(size(temp(~isnan(temp))));
         
             [RVE,PVE] = Exemption_Timeline(Yr(yy),County_State_FIP);
         
@@ -122,15 +127,19 @@ for kk=1:4
             else
                 COVID_County{yy}=zeros(size(temp(~isnan(temp))));
             end
+
+            Yr_County{yy}=Yr(yy).*ones(size(temp(~isnan(temp))));
         end
         
         ID=[cell2mat(ID_State_v);cell2mat(ID_County_v)];
         Y=[cell2mat(P_E_State);cell2mat(P_E_County)];
         Pt=[zeros(size(cell2mat(P_E_State)));ones(size(cell2mat(P_E_County)))];
         xt=[cell2mat(X_State) cell2mat(D_State) cell2mat(COVID_State) cell2mat(VL_State);cell2mat(X_County) cell2mat(D_County) cell2mat(COVID_County) cell2mat(VL_County)];
+
+        YrData_Table=[cell2mat(Yr_State);cell2mat(Yr_County)];
+        YrData_Table=YrData_Table(~isnan(sum(xt,2)));
         Pt=Pt(~isnan(sum(xt,2)));
         ID=ID(~isnan(sum(xt,2)));
-        YrData_Table=Yr(yy).*ones(size(Pt));
         Y=Y(~isnan(sum(xt,2)));
         xt=xt(~isnan(sum(xt,2)),:);
         Y(Y==1)=1-10^(-8);
@@ -140,7 +149,6 @@ for kk=1:4
         Vac_Dis=cell(size(Y));
         Vac_Dis(:)=Inqv(kk);
         clc;
-        
         Z=log(Y./(1-Y));
         XT=([ID Pt YrData_Table Z log(xt(:,1:8)./(1-xt(:,1:8))) log(xt(:,9)) xt(:,10:12)]);  
         T=[table(Vac_Dis) array2table(XT)];

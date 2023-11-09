@@ -18,11 +18,11 @@ end
 State_ID=unique(State_ID);
 clearvars -except State_ID 
 Yr=[2017:2021];
-Scenario={'Overall';'Any exemption';'No exemptions';'Only religious exemptions';'Religious and philosophical exemptions'};
+Scenario={'Overall';'No exemptions';'Any exemption';'Only religious exemptions';'Religious and philosophical exemptions'};
 
 
 
-N_Samp=30;
+N_Samp=50;
 Rand_Indx=randi(1000,N_Samp,1);
 Rand_Trust_S=randi(1000,N_Samp,2);
 Rand_Trust_M=randi(1000,N_Samp,2);
@@ -37,15 +37,15 @@ for dd=1:length(Var_Namev)
     for yy=1:length(Yr)
         parfor ss=1:N_Samp
             if strcmp(Var_Name,'Trust_in_Medicine')
-                var_temp=Return_State_Data(Var_Name,Yr(yy),State_ID,Rand_Indx(ss),Rand_Trust_S(ss,:),Rand_Trust_M(ss,:)); 
-                V(:,yy,ss)=log(var_temp./(1-var_temp));
+                V(:,yy,ss)=Return_State_Data(Var_Name,Yr(yy),State_ID,Rand_Indx(ss),Rand_Trust_S(ss,:),Rand_Trust_M(ss,:)); 
+%                 V(:,yy,ss)=log(var_temp./(1-var_temp));
             elseif strcmp(Var_Name,'Trust_in_Science')
-                var_temp=Return_State_Data(Var_Name,Yr(yy),State_ID,Rand_Indx(ss),Rand_Trust_S(ss,:),Rand_Trust_M(ss,:));      
-                V(:,yy,ss)=log(var_temp./(1-var_temp));
+                V(:,yy,ss)=Return_State_Data(Var_Name,Yr(yy),State_ID,Rand_Indx(ss),Rand_Trust_S(ss,:),Rand_Trust_M(ss,:));      
+%                 V(:,yy,ss)=log(var_temp./(1-var_temp));
             end
         end
     end
-    V=squeeze(mean(V,3));
+    V=squeeze(median(V,3));
     for yy=1:length(Yr)  
         [RE(:,yy),PE(:,yy)] = Exemption_Timeline(Yr(yy),State_ID);
     end
@@ -61,17 +61,15 @@ for dd=1:length(Var_Namev)
             end
         end
     end
-    
-
     Pre_pandemic=zeros(size(Scenario));
     Pandemic=zeros(size(Scenario));
     Pandemic_Effect=zeros(size(Scenario));
     
     V0=V(:,Yr<2020);
-    Pre_pandemic(1)=mean(V0(~isnan(V0)));
+    Pre_pandemic(1)=median(V0(~isnan(V0)));
     V1=V(:,Yr>=2020);
-    Pandemic(1)=mean(V1(~isnan(V1)));
-    [~,Pandemic_Effect(1)]=ttest2(V0(:),V1(:),'tail','right');
+    Pandemic(1)=median(V1(~isnan(V1)));
+    [Pandemic_Effect(1)]=ranksum(V0(:),V1(:),'tail','left');
 
     V0=V(:,Yr<2020);
     V0=V0(:);
@@ -80,7 +78,7 @@ for dd=1:length(Var_Namev)
     P_temp=PE(:,Yr<2020);
     P_temp=P_temp(:);
     V0=V0(R_temp==1 | P_temp==1);
-    Pre_pandemic(2)=mean(V0(~isnan(V0)));
+    Pre_pandemic(3)=median(V0(~isnan(V0)));
 
     V1=V(:,Yr>=2020);
     V1=V1(:);
@@ -89,20 +87,21 @@ for dd=1:length(Var_Namev)
     P_temp=PE(:,Yr>=2020);
     P_temp=P_temp(:);
     V1=V1(R_temp==1 | P_temp==1);
-    Pandemic(2)=mean(V1(~isnan(V1)));
-    [~,Pandemic_Effect(2)]=ttest2(V0,V1,'tail','right');
+    Pandemic(3)=median(V1(~isnan(V1)));
+    [Pandemic_Effect(3)]=ranksum(V0,V1,'tail','left');
     
     Rv=[0 1 1];
     Pv=[0 0 1];
-    for ii=3:length(Scenario)
+    Inx=[2 4 5];
+    for ii=1:length(Rv)
         V0=V(:,Yr<2020);
         V0=V0(:);
         R_temp=RE(:,Yr<2020);
         R_temp=R_temp(:);
         P_temp=PE(:,Yr<2020);
         P_temp=P_temp(:);
-        V0=V0(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pre_pandemic(ii)=mean(V0(~isnan(V0)));
+        V0=V0(R_temp==Rv(ii) & P_temp==Pv(ii));
+        Pre_pandemic(Inx(ii))=median(V0(~isnan(V0)));
 
         V1=V(:,Yr>=2020);
         V1=V1(:);
@@ -110,25 +109,30 @@ for dd=1:length(Var_Namev)
         R_temp=R_temp(:);
         P_temp=PE(:,Yr>=2020);
         P_temp=P_temp(:);
-        V1=V1(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pandemic(ii)=mean(V1(~isnan(V1)));
-        [~,Pandemic_Effect(ii)]=ttest2(V0,V1,'tail','right');
+        V1=V1(R_temp==Rv(ii) & P_temp==Pv(ii));
+        Pandemic(Inx(ii))=median(V1(~isnan(V1)));
+        [Pandemic_Effect(Inx(ii))]=ranksum(V0,V1,'tail','left');
     end
-    
+    Pre_pandemic=[num2str(Pre_pandemic,'%.4f')];
+    Pandemic=[num2str(Pandemic,'%.4f')];
+    t_p=Pandemic_Effect<0.001;
+    Pandemic_Effect=[num2str(Pandemic_Effect,'p = %.3f')];
+    Pandemic_Effect(t_p,:)=repmat('p < 0.001',sum(t_p),1);
     T1=table(Scenario,Pre_pandemic,Pandemic,Pandemic_Effect);
     
     writetable(T1,'Table_1_Trust_Dynamics.xlsx','Sheet',Var_Name)
+
 
     Pre_pandemic=zeros(size(Scenario));
     Pandemic=zeros(size(Scenario));
     Pandemic_Effect=zeros(size(Scenario));
     
     V0=m_slope(:,1);
-    Pre_pandemic(1)=mean(V0(~isnan(V0)));
+    Pre_pandemic(1)=median(V0(~isnan(V0)));
     V1=m_slope(:,2);
-    Pandemic(1)=mean(V1(~isnan(V1)));
+    Pandemic(1)=median(V1(~isnan(V1)));
     d_mslope=m_slope(:,1)-m_slope(:,2);
-    [~,Pandemic_Effect(1)]=ttest(d_mslope,0,'tail','right');
+    [Pandemic_Effect(1)]=signrank(d_mslope,0,'tail','right');
 
     V0=m_slope(:,1);
     V0=V0(:);
@@ -137,7 +141,7 @@ for dd=1:length(Var_Namev)
     P_temp=PE(:,Yr==2019);
     P_temp=P_temp(:);
     V0=V0(R_temp==1 | P_temp==1);
-    Pre_pandemic(2)=mean(V0(~isnan(V0)));
+    Pre_pandemic(3)=median(V0(~isnan(V0)));
 
     V1=m_slope(:,2);
     V1=V1(:);
@@ -146,20 +150,21 @@ for dd=1:length(Var_Namev)
     P_temp=PE(:,Yr==2020);
     P_temp=P_temp(:);
     V1=V1(R_temp==1 | P_temp==1);
-    Pandemic(2)=mean(V1(~isnan(V1)));
+    Pandemic(3)=median(V1(~isnan(V1)));
     d_mslope=m_slope(R_temp==1 | P_temp==1,1)-m_slope(R_temp==1 | P_temp==1,2);
-    [~,Pandemic_Effect(2)]=ttest(d_mslope,0,'tail','right');
+    [Pandemic_Effect(3)]=signrank(d_mslope,0,'tail','right');
     Rv=[0 1 1];
     Pv=[0 0 1];
-    for ii=3:length(Scenario)
+    Inx=[2 4 5];
+    for ii=1:length(Rv)
         V0=m_slope(:,1);
         V0=V0(:);
         R_temp=RE(:,Yr==2019);
         R_temp=R_temp(:);
         P_temp=PE(:,Yr==2019);
         P_temp=P_temp(:);
-        V0=V0(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pre_pandemic(ii)=mean(V0(~isnan(V0)));
+        V0=V0(R_temp==Rv(ii) & P_temp==Pv(ii));
+        Pre_pandemic(Inx(ii))=median(V0(~isnan(V0)));
 
         V1=m_slope(:,2);
         V1=V1(:);
@@ -167,75 +172,18 @@ for dd=1:length(Var_Namev)
         R_temp=R_temp(:);
         P_temp=PE(:,Yr==2020);
         P_temp=P_temp(:);
-        V1=V1(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pandemic(ii)=mean(V1(~isnan(V1)));
-        d_mslope=m_slope(R_temp==Rv(ii-2) & P_temp==Pv(ii-2),1)-m_slope(R_temp==Rv(ii-2) & P_temp==Pv(ii-2),2);
-        [~,Pandemic_Effect(ii)]=ttest(d_mslope,0,'tail','right');
+        V1=V1(R_temp==Rv(ii) & P_temp==Pv(ii));
+        Pandemic(Inx(ii))=median(V1(~isnan(V1)));
+        d_mslope=m_slope(R_temp==Rv(ii) & P_temp==Pv(ii),1)-m_slope(R_temp==Rv(ii) & P_temp==Pv(ii),2);
+        [Pandemic_Effect(Inx(ii))]=signrank(d_mslope,0,'tail','right');
     end
-    
+    Pre_pandemic=[num2str(Pre_pandemic,'%1.2e')];
+    Pandemic=[num2str(Pandemic,'%1.2e')];    
+    t_p=Pandemic_Effect<0.001;
+    Pandemic_Effect=[num2str(Pandemic_Effect,'p = %.3f')];
+    Pandemic_Effect(t_p,:)=repmat('p < 0.001',sum(t_p),1);
     T1=table(Scenario,Pre_pandemic,Pandemic,Pandemic_Effect);
-    
+
     writetable(T1,'Table_2_Trust_Dynamics.xlsx','Sheet',Var_Name)
-
-
-% Paired t-Test for uptake
-
-    Pre_pandemic=zeros(size(Scenario));
-    Pandemic=zeros(size(Scenario));
-    Pandemic_Effect=zeros(size(Scenario));
-    
-    V0=V(:,Yr<2020);
-    mV0=mean(V0,2);
-    Pre_pandemic(1)=mean(mV0(~isnan(mV0)));
-    V1=V(:,Yr>=2020);
-    mV1=mean(V1,2);
-    Pandemic(1)=mean(mV1(~isnan(mV1)));
-    [~,Pandemic_Effect(1)]=ttest(mV0(:),mV1(:),'tail','right');
-
-    V0=V(:,Yr<2020);
-    mV0=mean(V0,2);
-    R_temp=RE(:,Yr==2019);
-    R_temp=R_temp(:);
-    P_temp=PE(:,Yr==2019);
-    P_temp=P_temp(:);
-    mV0=mV0(R_temp==1 | P_temp==1);
-    Pre_pandemic(2)=mean(mV0(~isnan(mV0)));
-
-    V1=V(:,Yr>=2020);
-    mV1=mean(V1,2);
-    R_temp=RE(:,Yr==2020);
-    R_temp=R_temp(:);
-    P_temp=PE(:,Yr==2020);
-    P_temp=P_temp(:);
-    mV1=mV1(R_temp==1 | P_temp==1);
-    Pandemic(2)=mean(mV1(~isnan(mV1)));
-    [~,Pandemic_Effect(2)]=ttest2(mV0,mV1,'tail','right');
-    
-    Rv=[0 1 1];
-    Pv=[0 0 1];
-    for ii=3:length(Scenario)
-        V0=V(:,Yr<2020);
-        mV0=mean(V0,2);
-        R_temp=RE(:,Yr==2019);
-        R_temp=R_temp(:);
-        P_temp=PE(:,Yr==2019);
-        P_temp=P_temp(:);
-        mV0=mV0(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pre_pandemic(ii)=mean(mV0(~isnan(mV0)));
-
-        V1=V(:,Yr>=2020);
-        mV1=mean(V1,2);
-        R_temp=RE(:,Yr==2020);
-        R_temp=R_temp(:);
-        P_temp=PE(:,Yr==2020);
-        P_temp=P_temp(:);
-        mV1=mV1(R_temp==Rv(ii-2) & P_temp==Pv(ii-2));
-        Pandemic(ii)=mean(mV1(~isnan(mV1)));
-        [~,Pandemic_Effect(ii)]=ttest2(mV0,mV1,'tail','right');
-    end
-    
-    T1=table(Scenario,Pre_pandemic,Pandemic,Pandemic_Effect);
-    
-    writetable(T1,'Table_3_Trust_Dynamics.xlsx','Sheet',Var_Name)
 end
 

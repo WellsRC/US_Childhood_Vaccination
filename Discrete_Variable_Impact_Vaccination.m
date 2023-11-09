@@ -82,9 +82,16 @@ end
 
 X_County=mean(X_County,1);
 X_County=squeeze(real(X_County));
-m=min((1+per_inc)./(1+exp(-X_County(:,11))),1-10^(-8));
-s=min((1+per_inc)./(1+exp(-X_County(:,12))),1-10^(-8));
-u=max(1-(1+per_inc).*(1-1./(1+exp(-X_County(:,13)))),10^(-8));
+
+temp_v=1-1./(1+exp(-X_County(:,11))); % the level of untrust in the 
+m=1./(1+exp(-X_County(:,11)))+temp_v.*per_inc;
+
+temp_v=1-1./(1+exp(-X_County(:,12))); % the level of untrust in the 
+s=1./(1+exp(-X_County(:,12)))+temp_v.*per_inc;
+
+temp_v=1./(1+exp(-X_County(:,13))); % the proportion of the population uninsured
+temp_v2=(1-1./(1+exp(-X_County(:,13))))+temp_v.*per_inc; % new proprotion of those insured
+u=1-temp_v2; % new proprotion of those uninsured
 
 dm=m-1./(1+exp(-X_County(:,11)));
 ds=s-1./(1+exp(-X_County(:,12)));

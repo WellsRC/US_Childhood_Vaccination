@@ -28,7 +28,7 @@ rng(2023921)
 
 W=readtable('Supplement_Table_Model_Comparison.xlsx','Sheet','Table_All');
 W=table2array(W(:,20));
-N_Samp=30;
+N_Samp=100;
 Rand_Indx=randi(1000,N_Samp,1);
 Rand_Trust_S=randi(1000,N_Samp,2);
 Rand_Trust_M=randi(1000,N_Samp,2);
@@ -86,7 +86,7 @@ X_County=squeeze(real(X_County));
 m=1./(1+exp(-X_County(:,11)));
 s=1./(1+exp(-X_County(:,12)));
 u=1./(1+exp(-X_County(:,13)));
-beta_m_to_s=0.1783613435454238; % obtained from bayesian network analysis
+beta_m_to_s=0.18961742428440753; % obtained from bayesian network analysis
 
 load([pwd '\State_Data\County_Data\County_Population_' num2str(randi(1000)) '.mat']);
 Data_CID=Population.County_ID_Numeric;

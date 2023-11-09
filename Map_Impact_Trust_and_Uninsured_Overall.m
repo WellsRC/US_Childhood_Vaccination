@@ -1,4 +1,4 @@
-function Map_Impact_Trust_and_Uninsured(Vac_Nam)
+function Map_Impact_Trust_and_Uninsured_Overall(Vac_Nam)
 clc;
 close all;
 
@@ -18,9 +18,9 @@ for ii=1:length(County_ID)
 end
 
 if(strcmp(Vac_Nam,'IPV'))
-    load(['Impact_Trust_Medicine_Science_on_Uptake_Polio_2021.mat'],'dvds','dvdm','dvdu','vac_d');
+    load(['Impact_Trust_Medicine_Science_on_Uptake_Polio_2021_Overall_Weight.mat'],'dvds','dvdm','dvdu','vac_d');
 else
-    load(['Impact_Trust_Medicine_Science_on_Uptake_' Vac_Nam '_2021.mat'],'dvds','dvdm','dvdu','vac_d');
+    load(['Impact_Trust_Medicine_Science_on_Uptake_' Vac_Nam '_2021_Overall_Weight.mat'],'dvds','dvdm','dvdu','vac_d');
 end
 dvdu=-dvdu; % Want to examine the increase in insurance not an increase in the proportion uninsured
 dvdu(dvdu>=0.5)=0.5-10^(-8);
@@ -82,7 +82,6 @@ c_bound_ins=[0 0.1;
              0.2 0.3;
              0.3 0.4;
              0.4 0.5;];
-
 
      figure('units','normalized','outerposition',[0 0.075 1 1]);
      ax1=usamap('conus');
@@ -293,5 +292,5 @@ text(-40,1,'B','FontSize',32,'Units','normalized');
     
     geoshow(ax4, states,'Facecolor','none','LineWidth',1.5); hold on;
 
-print(gcf,['Map_' Vac_Nam '_Vaccine_Specific_Model.png'],'-dpng','-r600');
+print(gcf,['Map_' Vac_Nam '_Overall_Weight.png'],'-dpng','-r600');
 end

@@ -160,7 +160,7 @@ x_ins=linspace(0,0.5,size(C_ins,1));
     for mm=1:length(x_sci_t)
         text(ymin,dx_t(mm),num2str(x_sci_t(mm),'%3.2f'),'HorizontalAlignment','center','Fontsize',18);
     end
-    text(ymin+2.5,0.5,{['Impact of increasinge trust in science']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+    text(ymin+2.5,0.5,{['Elasticity of trust in science']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
     axis off;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,7 +181,7 @@ x_ins=linspace(0,0.5,size(C_ins,1));
         text(ymin,dx_t(mm),num2str(x_med_t(mm),'%3.2f'),'HorizontalAlignment','center','Fontsize',18);
     end
 
-    text(ymin+2.5,0.5,{['Impact of increasinge trust in medicine']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+    text(ymin+2.5,0.5,{['Elasticity of trust in medicine']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
     axis off;    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -203,7 +203,7 @@ x_ins=linspace(0,0.5,size(C_ins,1));
     end
     mm=length(x_ins_t);
     text(ymin,dx_t(mm),[num2str(x_ins_t(mm),'%3.2f') '+'],'HorizontalAlignment','center','Fontsize',18);
-    text(ymin+2.5,0.5,{['Impact of increasing proportion insured']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+    text(ymin+2.5,0.5,{['Elasticity of proportion insured']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
     axis off;     
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
