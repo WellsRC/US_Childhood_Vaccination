@@ -6,19 +6,19 @@ S=shaperead([pwd '\State_Data\County_Data\cb_2018_us_county_500k.shp'],'UseGeoCo
 State_FIPc={S.STATEFP};
 State_FIP=zeros(size(State_FIPc));
 for ii=1:length(State_FIP)
-State_FIP(ii)=str2double(State_FIPc{ii});
+    State_FIP(ii)=str2double(State_FIPc{ii});
 end
 S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
 County_ID_temp={S.GEOID};
 County_ID=zeros(size(County_ID_temp));
 for ii=1:length(County_ID)
-County_ID(ii)=str2double(County_ID_temp{ii});
+    County_ID(ii)=str2double(County_ID_temp{ii});
 end
 
 State_FIPc={S.STATEFP};
 County_State_FIP=zeros(size(State_FIPc));
 for ii=1:length(County_State_FIP)
-County_State_FIP(ii)=str2double(State_FIPc{ii});
+    County_State_FIP(ii)=str2double(State_FIPc{ii});
 end
 
 clearvars -except County_ID County_State_FIP
@@ -92,17 +92,15 @@ for ss=1:N_Samp
     end
     
 end
-
-
 VN={'Economic','Education','Income','Political','Race','Sex','Trust_in_Medicine','Trust_in_Science','Uninsured_19_under'};
 VN_O={'COVID'};
 
     
-    A={'Sex';'Race'};
-    B={'COVID';'COVID'};
-    Method={'NotAToBOrBToA';'NotAToBOrBToA'};
-    FailureMode={'ThrowException';'ThrowException'};
-    TemporalOrder=cell(2,1);
+    A={'Sex';'Race';'Sex'};
+    B={'COVID';'COVID';'Race'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
 
     T=[table(A,B,Method,FailureMode,TemporalOrder)];
 
@@ -147,6 +145,5 @@ VN_O={'COVID'};
     TemporalOrder=cell(3,1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
-
 
     writetable(T,['Data_Transformed_BN.xlsx'],'Sheet','Conditions','WriteVariableNames',true);

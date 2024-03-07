@@ -1,14 +1,16 @@
 clear;
 clc;
 
+% Estimtes the coefficients for the logistic regression model at th estate
+% level and then computes the cross-validation at the county level
 
 T_County=readtable("Data_Transformed_Combined_County_Level.xlsx");
 T_State=readtable("Data_Transformed_Combined_State_Level.xlsx");
 
 
 
-X_State=[T_State.Economic T_State.Education T_State.Income T_State.Political T_State.Race T_State.Sex T_State.Trust_in_Medicine T_State.Trust_in_Science T_State.Uninsured_19_under];
-X_County=[T_County.Economic T_County.Education T_County.Income T_County.Political T_County.Race T_County.Sex T_County.Trust_in_Medicine T_County.Trust_in_Science T_County.Uninsured_19_under];
+X_State=[T_State.Economic T_State.Education T_State.Income T_State.Political T_State.Race T_State.Trust_in_Medicine T_State.Trust_in_Science T_State.Uninsured_19_under];
+X_County=[T_County.Economic T_County.Education T_County.Income T_County.Political T_County.Race T_County.Trust_in_Medicine T_County.Trust_in_Science T_County.Uninsured_19_under];
 
 Y_State=T_State.Vaccine_Uptake;
 Y_County=T_County.Vaccine_Uptake;

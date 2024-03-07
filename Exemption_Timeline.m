@@ -1,9 +1,13 @@
-function [RVE,PVE] = Exemption_Timeline(Year_Plot,State_ID)
+function [RVE,PVE] = Exemption_Timeline(Year_Plot,State_ID,Vac)
 
-T=readtable([pwd '\State_Data\State_Exemptions.xlsx']);
+if(strcmp(Vac,'MMR'))
+    T=readtable([pwd '\State_Data\Demographic_Data\State_Exemptions.xlsx'],'Sheet','MMR');
+else
+    T=readtable([pwd '\State_Data\Demographic_Data\State_Exemptions.xlsx'],'Sheet','Others');
+end
 
-Year_Inq=[2017 2018 2019 2020 2021];
-Table_Ind=[3 8;4 9;5 10;6 11;7 12];
+Year_Inq=[2015 2016 2017 2018 2019 2020 2021 2022];
+Table_Ind=[3 11;4 12;5 13;6 14;7 15;8 16;9 17;10 18];
 
 ty=Year_Inq==Year_Plot;
 

@@ -1,11 +1,11 @@
-function [County_Trust_in_Science,County_Trust_in_Medicine,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Var_1,County_ID,Pop_RS,TrustS_RS,TrustM_RS)
+function [County_Trust_in_Science,County_Trust_in_Medicine,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Var_1,County_ID)
     
-    load([pwd '\State_Data\Trust_in_Science_Stratification_' num2str(TrustS_RS) '.mat']);
-    load([pwd '\State_Data\Trust_in_Medicine_Stratification_' num2str(TrustM_RS) '.mat']);
-    load([pwd '\State_Data\County_Data\County_Population_' num2str(Pop_RS) '.mat']);
-    Data_CID=Population.County_ID_Numeric;
-    Data_Year=Population.Year_Data;
-    eval(['P=Population.' Var_1 ';']);
+    load([pwd '\State_Data\Trust_in_Science_Stratification.mat']);
+    load([pwd '\State_Data\Trust_in_Medicine_Stratification.mat']);
+    load([pwd '\State_Data\Demographic_Data\County_Population.mat']);
+    Data_CID=County_Demo.County_ID;
+    Data_Year=County_Demo.Year_Data;
+    eval(['P=County_Demo.' Var_1 ';']);
     eval(['TRS=Trust_in_Science.' Var_1 ';']);
     eval(['TRM=Trust_in_Medicine.' Var_1 ';']);
     County_Trust_in_Science=NaN.*zeros(length(County_ID),length(Data_Year));

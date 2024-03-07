@@ -1,15 +1,15 @@
-function [county_weight,year_weight,state_ID_weight,county_ID_weight,US_weight]=Return_Population_Weight_County(Rand_Indx)
+function [county_weight,year_weight,state_ID_weight,county_ID_weight,US_weight]=Return_Population_Weight_County()
 
-load([pwd '\State_Data\County_Data\County_Population_' num2str(Rand_Indx) '.mat']);
+load([pwd '\State_Data\Demographic_Data\County_Population.mat']);
 
-USID=unique(Population.State_ID);
+USID=unique(County_Demo.State_ID);
 
-state_ID_weight=Population.State_ID;
-county_ID_weight=Population.County_ID_Numeric;
+state_ID_weight=County_Demo.State_ID;
+county_ID_weight=County_Demo.County_ID;
 
-county_weight=Population.Sex.Male+Population.Sex.Female;
+county_weight=County_Demo.Sex.Male+County_Demo.Sex.Female;
 
-year_weight=Population.Year_Data;
+year_weight=County_Demo.Year_Data;
 
 US_weight=county_weight;
 for ii=1:length(year_weight)
