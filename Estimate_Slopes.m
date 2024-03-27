@@ -1,7 +1,12 @@
-function [m_slope,pts]=Estimate_Slopes(Yr,V,Yr_ref)
+function J=Estimate_Slopes(par_est,V,Yr)
 
-[pts]=fmincon(@(x)mean((V-Construct_Line(x,Yr,Yr_ref)).^2),[V(1) V(Yr==Yr_ref) V(end)],[],[],[],[],[0 0 0],[1 1 1]);
+m_slope=reshape(par_est(1:2.*size(V,1)),size(V,1),2);
+peak_point=reshape(par_est(2.*size(V,1)+[1:size(V,1)]),size(V,1),1);
+Year_Inflection=par_est(end);
 
-m_slope=[(pts(2)-pts(1))./(Yr_ref-Yr(1)) (pts(3)-pts(2))./(Yr(end)-Yr_ref)];
-
+J=zeros(size(V));
+for jj=1:size(V,1)
+    J(jj,:)=Construct_Line(m_slope(jj,:),peak_point(jj),Yr,Year_Inflection)-V(jj,:);
+end
+J(isnan(J))=0;
 end

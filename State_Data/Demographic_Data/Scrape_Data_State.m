@@ -7,7 +7,9 @@ Year_Data=[2010:2022];
 [~,State_Demo]=Gen_Structure(Year_Data);
 
 for yy=1:length(Year_Data)
-     T=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S0101-Data.csv']);    
+    T=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S0101-Data.csv']);    
+    T_VN=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S0101-Column-Metadata.csv']);
+
     temp=zeros(height(T),1);
     for jj=1:length(temp)
         test=T.GEO_ID(jj);
@@ -20,6 +22,12 @@ for yy=1:length(Year_Data)
     T=T(tf,:);
     
     E=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S1501-Data.csv']);
+    if(Year_Data(yy)<2017)
+        E_VN=readtable(['ACSST5Y' num2str(2017) '.S1501-Column-Metadata.csv']);
+    else
+        E_VN=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S1501-Column-Metadata.csv']);
+    end
+    
     temp=zeros(height(E),1);
     for jj=1:length(temp)
         test=E.GEO_ID(jj);
@@ -32,6 +40,12 @@ for yy=1:length(Year_Data)
     E=E(tf,:);
     
     Ec=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S1901-Data.csv']);
+    if(Year_Data(yy)<2017)
+        Ec_VN=readtable(['ACSST5Y' num2str(2017) '.S1901-Column-Metadata.csv']);
+    else
+        Ec_VN=readtable(['ACSST5Y' num2str(Year_Data(yy)) '.S1901-Column-Metadata.csv']);
+    end
+    
     temp=zeros(height(Ec),1);
     for jj=1:length(temp)
         test=Ec.GEO_ID(jj);
@@ -44,6 +58,8 @@ for yy=1:length(Year_Data)
     Ec=Ec(tf,:);
     
     RW=readtable(['ACSDT5Y' num2str(Year_Data(yy)) '.B01001H-Data.csv']);
+    RW_VN=readtable(['ACSDT5Y' num2str(Year_Data(yy)) '.B01001H-Column-Metadata.csv']);
+    
     temp=zeros(height(RW),1);
     for jj=1:length(temp)
         test=RW.GEO_ID(jj);
@@ -56,6 +72,8 @@ for yy=1:length(Year_Data)
     RW=RW(tf,:);
     
     RB=readtable(['ACSDT5Y' num2str(Year_Data(yy)) '.B01001B-Data.csv']);
+    RB_VN=readtable(['ACSDT5Y' num2str(Year_Data(yy)) '.B01001B-Column-Metadata.csv']);
+    
     temp=zeros(height(RB),1);
     for jj=1:length(temp)
         test=RB.GEO_ID(jj);
@@ -66,29 +84,77 @@ for yy=1:length(Year_Data)
     RB.GEO_ID=temp;
     tf=ismember(temp,State_Demo.State_ID);
     RB=RB(tf,:);
-         
-    temp_EC=Ec.S1901_C01_001E;
+    
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    %% Economic Data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!Total') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames);
+    temp_EC=table2array(Ec(:,tf));
     
     if(~isnan(str2double(temp_EC(1))))
         temp_EC=str2double(temp_EC);
     end
 
-       
-    temp_lower1=Ec.S1901_C01_002E;
-    temp_lower2=Ec.S1901_C01_003E;
-    temp_lower3=Ec.S1901_C01_004E;
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!Less than $10,000') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!Less than $10,000');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames);   
+    temp_lower1=table2array(Ec(:,tf));
+
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$10,000 to $14,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$10,000 to $14,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_lower2=table2array(Ec(:,tf));
+
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$15,000 to $24,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$15,000 to $24,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_lower3=table2array(Ec(:,tf));
     
-    temp_work1=Ec.S1901_C01_005E;
-    temp_work2=Ec.S1901_C01_006E;
+
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$25,000 to $34,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$25,000 to $34,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_work1=table2array(Ec(:,tf));
+
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$35,000 to $49,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$35,000 to $49,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_work2=table2array(Ec(:,tf));
     
-    temp_middle1=Ec.S1901_C01_007E;
-    temp_middle2=Ec.S1901_C01_008E;
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$50,000 to $74,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$50,000 to $74,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_middle1=table2array(Ec(:,tf));
     
-    temp_upper1=Ec.S1901_C01_009E;
-    temp_upper2=Ec.S1901_C01_010E;
-    temp_upper3=Ec.S1901_C01_011E;   
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$75,000 to $99,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$75,000 to $99,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_middle2=table2array(Ec(:,tf));
     
-    temp_income_house=Ec.S1901_C01_012E; 
+    
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$100,000 to $149,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$100,000 to $149,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_upper1=table2array(Ec(:,tf));
+    
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$150,000 to $199,999') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$150,000 to $199,999');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_upper2=table2array(Ec(:,tf));
+    
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!$200,000 or more') | strcmp(Ec_VN.Label,'Estimate!!Households!!Total!!$200,000 or more');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_upper3=table2array(Ec(:,tf));   
+    
+
+    tf=strcmp(Ec_VN.Label,'Households!!Estimate!!Median income (dollars)') | strcmp(Ec_VN.Label,'Estimate!!Households!!Median income (dollars)');
+    cv=Ec_VN.ColumnName(tf);
+    tf=strcmp(cv,Ec.Properties.VariableNames); 
+    temp_income_house=table2array(Ec(:,tf)); 
 
     if(~isnan(str2double(temp_lower1(1))))
        temp_lower1=str2double(temp_lower1); 
@@ -110,108 +176,483 @@ for yy=1:length(Year_Data)
        temp_income_house=str2double(temp_income_house);     
     end
     
-    temp_E_Pop_18=E.S1501_C01_001E;
-    temp_LHS_18=E.S1501_C01_002E;
-    temp_HS_18=E.S1501_C01_003E;
-    temp_C1_18=E.S1501_C01_004E;
-    temp_C2_18=E.S1501_C01_005E;
-    
-    temp_E_Pop_25=E.S1501_C01_006E;
-    temp_LHS1_25=E.S1501_C01_007E;
-    temp_LHS2_25=E.S1501_C01_008E;
-    temp_HS_25=E.S1501_C01_009E;
-    temp_C1_25=E.S1501_C01_010E;
-    temp_C2_25=E.S1501_C01_011E;
-    temp_C3_25=E.S1501_C01_012E;
-    temp_C4_25=E.S1501_C01_013E;
-    
-    temp_pop_total=T.S0101_C01_001E;
-    
-    temp_white=RW.B01001H_001E;
-    temp_black=RB.B01001B_001E;
-    
-    
-    temp_25_29=T.S0101_C01_007E;
-    temp_30_34=T.S0101_C01_008E;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    %% Education Data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
-    temp_35_39=T.S0101_C01_009E;
-    temp_40_44=T.S0101_C01_010E;
-    temp_45_49=T.S0101_C01_011E;
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years') | strcmp(E_VN.Label,'Total!!Estimate!!Population 18 to 24 years') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 18 to 24 years');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_E_Pop_18=table2array(E(:,tf));
 
-    temp_50_54=T.S0101_C01_012E;
-    temp_55_59=T.S0101_C01_013E;
-    temp_60_64=T.S0101_C01_014E;
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years!!Less than high school graduate') | strcmp(E_VN.Label,'Total!!Estimate!!Population 18 to 24 years!!Less than high school graduate') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 18 to 24 years!!Less than high school graduate');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_LHS_18=table2array(E(:,tf));
+
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years!!High school graduate (includes equivalency)') | strcmp(E_VN.Label,'Total!!Estimate!!Population 18 to 24 years!!High school graduate (includes equivalency)') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 18 to 24 years!!High school graduate (includes equivalency)');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_HS_18=table2array(E(:,tf));
+
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years!!Some college or associate''s degree') | strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years!!Some college or associate''s degree') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 18 to 24 years!!Some college or associate''s degree');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C1_18=table2array(E(:,tf));
+
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 18 to 24 years!!Bachelor''s degree or higher') | strcmp(E_VN.Label,'Total!!Estimate!!Population 18 to 24 years!!Bachelor''s degree or higher') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 18 to 24 years!!Bachelor''s degree or higher');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C2_18=table2array(E(:,tf));
     
-    if(Year_Data(yy)<2017)
-        temp_male=T.S0101_C02_001E;
-        temp_female=T.S0101_C03_001E;
 
-        temp_18_24=T.S0101_C01_022E;
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_E_Pop_25=table2array(E(:,tf));
 
-        temp_65_over=T.S0101_C01_028E;
-    else        
-        temp_male=T.S0101_C03_001E;
-        temp_female=T.S0101_C05_001E;
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Less than 9th grade') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!Less than 9th grade') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Less than 9th grade');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_LHS1_25=table2array(E(:,tf));
 
-        temp_18_24=T.S0101_C01_023E;
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!9th to 12th grade, no diploma') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!9th to 12th grade, no diploma') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!9th to 12th grade, no diploma');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_LHS2_25=table2array(E(:,tf));
 
-        temp_65_over=T.S0101_C01_030E;
-    end
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!High school graduate (includes equivalency)') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!High school graduate (includes equivalency)') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!High school graduate (includes equivalency)');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_HS_25=table2array(E(:,tf));
 
-    if(~isnan(str2double(temp_LHS_18(1))))     
-        
-        temp_LHS_18=str2double(temp_LHS_18);
-        temp_HS_18=str2double(temp_HS_18);
-        temp_C1_18=str2double(temp_C1_18);
-        temp_C2_18=str2double(temp_C2_18);          
-    end
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Some college, no degree') | strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Some college, no degree') | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Some college, no degree');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C1_25=table2array(E(:,tf));
+
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Associate''s degree') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!Associate''s degree')  | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Associate''s degree');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C2_25=table2array(E(:,tf));
     
-    if(~isnan(str2double(temp_white(1))))
-            temp_white=str2double(temp_white);
-    end
-        
-    if(~isnan(str2double(temp_black(1))))
-        temp_black=str2double(temp_black);
-    end
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Bachelor''s degree') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!Bachelor''s degree')  | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Bachelor''s degree');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C3_25=table2array(E(:,tf));
+
+    tf=strcmp(E_VN.Label,'Estimate!!Total!!Population 25 years and over!!Graduate or professional degree') | strcmp(E_VN.Label,'Total!!Estimate!!Population 25 years and over!!Graduate or professional degree')  | strcmp(E_VN.Label,'Estimate!!Total!!AGE BY EDUCATIONAL ATTAINMENT!!Population 25 years and over!!Graduate or professional degree');
+    cv=E_VN.ColumnName(tf);
+    tf=strcmp(cv,E.Properties.VariableNames);
+    temp_C4_25=table2array(E(:,tf));
     
-    if(~isnan(str2double(temp_E_Pop_18(1))))
-            temp_E_Pop_18=str2double(temp_E_Pop_18);
-    end
-        
-    if(~isnan(str2double(temp_E_Pop_25(1))))
-        temp_E_Pop_25=str2double(temp_E_Pop_25);
-    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    %% Total Population Data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!Total population') | strcmp(T_VN.Label,'Total!!Estimate!!Total population');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_pop_total=table2array(T(:,tf));
     
-    if(~isnan(str2double(temp_LHS1_25(1))))       
-        temp_LHS1_25=str2double(temp_LHS1_25);
-        temp_LHS2_25=str2double(temp_LHS2_25);
-        temp_HS_25=str2double(temp_HS_25);
-        temp_C1_25=str2double(temp_C1_25);
-        temp_C2_25=str2double(temp_C2_25);
-        temp_C3_25=str2double(temp_C3_25);
-        temp_C4_25=str2double(temp_C4_25); 
-    end
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!Total population') | strcmp(T_VN.Label,'Male!!Estimate!!Total population');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_total=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!Total population') | strcmp(T_VN.Label,'Female!!Estimate!!Total population');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_total=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Total!!Estimate!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!SELECTED AGE CATEGORIES!!18 to 24 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_18_24=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Male!!Estimate!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!SELECTED AGE CATEGORIES!!18 to 24 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_18_24=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Female!!Estimate!!SELECTED AGE CATEGORIES!!18 to 24 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!SELECTED AGE CATEGORIES!!18 to 24 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_18_24=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!25 to 29 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_25_29=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!25 to 29 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_25_29=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!25 to 29 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!25 to 29 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_25_29=table2array(T(:,tf));
     
-    if(~isnan(str2double(temp_male(1))))
-        temp_male=str2double(temp_male);
-        temp_female=str2double(temp_female);
-        
-        temp_pop_total=str2double(temp_pop_total);
-        
-        temp_18_24=str2double(temp_18_24);
-        temp_25_29=str2double(temp_25_29);
-        temp_30_34=str2double(temp_30_34);
-        
-        temp_35_39=str2double(temp_35_39);
-        temp_40_44=str2double(temp_40_44);
-        temp_45_49=str2double(temp_45_49);
-        
-        temp_50_54=str2double(temp_50_54);
-        temp_55_59=str2double(temp_55_59);
-        temp_60_64=str2double(temp_60_64);
-        
-        temp_65_over=str2double(temp_65_over);
-    end
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!30 to 34 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_30_34=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!30 to 34 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_30_34=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!30 to 34 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!30 to 34 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_30_34=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!35 to 39 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_35_39=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!35 to 39 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_35_39=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!35 to 39 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!35 to 39 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_35_39=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!40 to 44 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_40_44=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!40 to 44 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_40_44=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!40 to 44 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!40 to 44 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_40_44=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!45 to 49 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_45_49=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!45 to 49 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_45_49=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!45 to 49 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!45 to 49 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_45_49=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!50 to 54 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_50_54=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!50 to 54 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_50_54=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!50 to 54 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!50 to 54 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_50_54=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!55 to 59 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_55_59=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!55 to 59 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_55_59=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!55 to 59 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!55 to 59 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_55_59=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Total!!Estimate!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!AGE!!60 to 64 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_60_64=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Male!!Estimate!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!AGE!!60 to 64 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_60_64=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Female!!Estimate!!AGE!!60 to 64 years') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!AGE!!60 to 64 years');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_60_64=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Total!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Total!!Estimate!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Estimate!!Total!!Total population!!SELECTED AGE CATEGORIES!!65 years and over');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_total_65_plus=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Male!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Male!!Estimate!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Estimate!!Male!!Total population!!SELECTED AGE CATEGORIES!!65 years and over');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_male_65_plus=table2array(T(:,tf));
+
+    tf=strcmp(T_VN.Label,'Estimate!!Female!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Female!!Estimate!!SELECTED AGE CATEGORIES!!65 years and over') | strcmp(T_VN.Label,'Estimate!!Female!!Total population!!SELECTED AGE CATEGORIES!!65 years and over');
+    cv=T_VN.ColumnName(tf);
+    tf=strcmp(cv,T.Properties.VariableNames);
+    temp_female_65_plus=table2array(T(:,tf));
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    %% White only population Data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+    
+    tf=strcmp(RW_VN.Label,'Estimate!!Total') | strcmp(RW_VN.Label,'Estimate!!Total:');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wpop_total=table2array(RW(:,tf));
+    
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_total=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_total=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!18 and 19 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!18 and 19 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_18_19=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!18 and 19 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!18 and 19 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_18_19=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!20 to 24 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!20 to 24 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_20_24=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!20 to 24 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!20 to 24 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_20_24=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!25 to 29 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!25 to 29 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_25_29=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!25 to 29 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!25 to 29 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_25_29=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!30 to 34 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!30 to 34 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_30_34=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!30 to 34 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!30 to 34 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_30_34=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!35 to 44 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!35 to 44 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_35_44=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!35 to 44 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!35 to 44 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_35_44=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!45 to 54 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!45 to 54 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_45_54=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!45 to 54 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!45 to 54 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_45_54=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!55 to 64 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!55 to 64 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_55_64=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!55 to 64 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!55 to 64 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_55_64=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!65 to 74 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!65 to 74 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_65_74=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!65 to 74 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!65 to 74 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_65_74=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!75 to 84 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!75 to 84 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_75_84=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!75 to 84 years') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!75 to 84 years');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_75_84=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Male!!85 years and over') | strcmp(RW_VN.Label,'Estimate!!Total:!!Male:!!85 years and over');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wmale_85_plus=table2array(RW(:,tf));
+
+    tf=strcmp(RW_VN.Label,'Estimate!!Total!!Female!!85 years and over') | strcmp(RW_VN.Label,'Estimate!!Total:!!Female:!!85 years and over');
+    cv=RW_VN.ColumnName(tf);
+    tf=strcmp(cv,RW.Properties.VariableNames);
+    temp_wfemale_85_plus=table2array(RW(:,tf));
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    %% Black only population Data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total') | strcmp(RB_VN.Label,'Estimate!!Total:');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bpop_total=table2array(RB(:,tf));
+    
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_total=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_total=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!18 and 19 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!18 and 19 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_18_19=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!18 and 19 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!18 and 19 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_18_19=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!20 to 24 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!20 to 24 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_20_24=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!20 to 24 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!20 to 24 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_20_24=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!25 to 29 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!25 to 29 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_25_29=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!25 to 29 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!25 to 29 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_25_29=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!30 to 34 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!30 to 34 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_30_34=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!30 to 34 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!30 to 34 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_30_34=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!35 to 44 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!35 to 44 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_35_44=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!35 to 44 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!35 to 44 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_35_44=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!45 to 54 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!45 to 54 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_45_54=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!45 to 54 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!45 to 54 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_45_54=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!55 to 64 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!55 to 64 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_55_64=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!55 to 64 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!55 to 64 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_55_64=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!65 to 74 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!65 to 74 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_65_74=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!65 to 74 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!65 to 74 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_65_74=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!75 to 84 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!75 to 84 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_75_84=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!75 to 84 years') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!75 to 84 years');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_75_84=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Male!!85 years and over') | strcmp(RB_VN.Label,'Estimate!!Total:!!Male:!!85 years and over');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bmale_85_plus=table2array(RB(:,tf));
+
+    tf=strcmp(RB_VN.Label,'Estimate!!Total!!Female!!85 years and over') | strcmp(RB_VN.Label,'Estimate!!Total:!!Female:!!85 years and over');
+    cv=RB_VN.ColumnName(tf);
+    tf=strcmp(cv,RB.Properties.VariableNames);
+    temp_bfemale_85_plus=table2array(RB(:,tf));
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     % Calculate outcomes for aggregated compartments
@@ -219,86 +660,162 @@ for yy=1:length(Year_Data)
     
     
     if(yy==1)
-        temp_white_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_black_v=zeros(length(State_Demo.State_ID),length(Year_Data));
         
-        temp_65_over_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_income_house_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_male_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_female_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        
-        temp_18_24_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_25_29_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_30_34_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_35_39_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_40_44_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_45_49_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_50_54_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_55_59_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_60_64_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_E_Pop_18_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_LHS_18_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_E_Pop_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_LHS1_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_LHS2_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_HS_18_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_HS_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C1_18_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C2_18_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C1_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C2_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C3_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_C4_25_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_lower1_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_lower2_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_lower3_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_work1_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_work2_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_middle1_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_middle2_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        
-        temp_upper1_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_upper2_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-        temp_upper3_v=zeros(length(State_Demo.State_ID),length(Year_Data));
-    
-        temp_EC_v=zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_income_house_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
 
-        temp_pop_total_v=zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_E_Pop_18_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_LHS_18_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_E_Pop_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_LHS1_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_LHS2_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_HS_18_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_HS_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C1_18_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C2_18_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C1_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C2_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C3_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_C4_25_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+    
+        temp_lower1_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_lower2_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_lower3_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+    
+        temp_work1_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_work2_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+    
+        temp_middle1_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_middle2_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        
+        temp_upper1_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_upper2_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_upper3_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+    
+        temp_EC_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        
+        temp_pop_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_18_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_18_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_18_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_35_39_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_35_39_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_35_39_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_40_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_40_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_40_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_45_49_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_45_49_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_45_49_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_50_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_50_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_50_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_55_59_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_55_59_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_55_59_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_60_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_60_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_60_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_total_65_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_male_65_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_female_65_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+
+        temp_wpop_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_18_19_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_18_19_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_20_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_20_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_35_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_35_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_45_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_45_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_55_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_55_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_65_74_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_65_74_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_75_84_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_75_84_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wmale_85_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_wfemale_85_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+
+        temp_bpop_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_total_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_18_19_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_18_19_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_20_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_20_24_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_25_29_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_30_34_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_35_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_35_44_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_45_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_45_54_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_55_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_55_64_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_65_74_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_65_74_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_75_84_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_75_84_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bmale_85_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+        temp_bfemale_85_plus_v=NaN.*zeros(length(State_Demo.State_ID),length(Year_Data));
+
     end
     for zz=1:length(State_Demo.State_ID)
         t_cindx=ismember(T.GEO_ID,State_Demo.State_ID(zz));
-        if(sum(t_cindx)>0)
-           
-            temp_male_v(zz,yy)=temp_male(t_cindx);
-            temp_female_v(zz,yy)=temp_female(t_cindx);
-        
-            temp_18_24_v(zz,yy)=temp_18_24(t_cindx);
-            temp_25_29_v(zz,yy)=temp_25_29(t_cindx);
-            temp_30_34_v(zz,yy)=temp_30_34(t_cindx);
-        
-            temp_35_39_v(zz,yy)=temp_35_39(t_cindx);
-            temp_40_44_v(zz,yy)=temp_40_44(t_cindx);
-            temp_45_49_v(zz,yy)=temp_45_49(t_cindx);
-        
-            temp_50_54_v(zz,yy)=temp_50_54(t_cindx);
-            temp_55_59_v(zz,yy)=temp_55_59(t_cindx);
-            temp_60_64_v(zz,yy)=temp_60_64(t_cindx);
-    
-            temp_65_over_v(zz,yy)=temp_65_over(t_cindx);
-                
+        if(sum(t_cindx)>0)           
             temp_pop_total_v(zz,yy)=temp_pop_total(t_cindx);
+            temp_male_total_v(zz,yy)=temp_male_total(t_cindx);
+            temp_female_total_v(zz,yy)=temp_female_total(t_cindx);
+            temp_total_18_24_v(zz,yy)=temp_total_18_24(t_cindx);
+            temp_male_18_24_v(zz,yy)=temp_male_18_24(t_cindx);
+            temp_female_18_24_v(zz,yy)=temp_female_18_24(t_cindx);
+            temp_total_25_29_v(zz,yy)=temp_total_25_29(t_cindx);
+            temp_male_25_29_v(zz,yy)=temp_male_25_29(t_cindx);
+            temp_female_25_29_v(zz,yy)=temp_female_25_29(t_cindx);
+            temp_total_30_34_v(zz,yy)=temp_total_30_34(t_cindx);
+            temp_male_30_34_v(zz,yy)=temp_male_30_34(t_cindx);
+            temp_female_30_34_v(zz,yy)=temp_female_30_34(t_cindx);
+            temp_total_35_39_v(zz,yy)=temp_total_35_39(t_cindx);
+            temp_male_35_39_v(zz,yy)=temp_male_35_39(t_cindx);
+            temp_female_35_39_v(zz,yy)=temp_female_35_39(t_cindx);
+            temp_total_40_44_v(zz,yy)=temp_total_40_44(t_cindx);
+            temp_male_40_44_v(zz,yy)=temp_male_40_44(t_cindx);
+            temp_female_40_44_v(zz,yy)=temp_female_40_44(t_cindx);
+            temp_total_45_49_v(zz,yy)=temp_total_45_49(t_cindx);
+            temp_male_45_49_v(zz,yy)=temp_male_45_49(t_cindx);
+            temp_female_45_49_v(zz,yy)=temp_female_45_49(t_cindx);
+            temp_total_50_54_v(zz,yy)=temp_total_50_54(t_cindx);
+            temp_male_50_54_v(zz,yy)=temp_pop_total(t_cindx);
+            temp_female_50_54_v(zz,yy)=temp_male_50_54(t_cindx);
+            temp_total_55_59_v(zz,yy)=temp_total_55_59(t_cindx);
+            temp_male_55_59_v(zz,yy)=temp_male_55_59(t_cindx);
+            temp_female_55_59_v(zz,yy)=temp_female_55_59(t_cindx);
+            temp_total_60_64_v(zz,yy)=temp_total_60_64(t_cindx);
+            temp_male_60_64_v(zz,yy)=temp_male_60_64(t_cindx);
+            temp_female_60_64_v(zz,yy)=temp_female_60_64(t_cindx);
+            temp_total_65_plus_v(zz,yy)=temp_total_65_plus(t_cindx);
+            temp_male_65_plus_v(zz,yy)=temp_male_65_plus(t_cindx);
+            temp_female_65_plus_v(zz,yy)=temp_female_65_plus(t_cindx);
         end
         
 
-        t_cindx=ismember(Ec.GEO_ID,State_Demo.State_ID(zz));
+        t_cindx=ismember(E.GEO_ID,State_Demo.State_ID(zz));
         if(sum(t_cindx)>0)
             temp_E_Pop_18_v(zz,yy)=temp_E_Pop_18(t_cindx);
             temp_LHS_18_v(zz,yy)=temp_LHS_18(t_cindx);
@@ -339,12 +856,56 @@ for yy=1:length(Year_Data)
 
         t_cindx=ismember(RB.GEO_ID,State_Demo.State_ID(zz));
         if(sum(t_cindx)>0)
-            temp_black_v(zz,yy)=temp_black(t_cindx);
+            temp_bpop_total_v(zz,yy)=temp_bpop_total(t_cindx);
+            temp_bmale_total_v(zz,yy)=temp_bmale_total(t_cindx);
+            temp_bfemale_total_v(zz,yy)=temp_bfemale_total(t_cindx);
+            temp_bmale_18_19_v(zz,yy)=temp_bmale_18_19(t_cindx);
+            temp_bfemale_18_19_v(zz,yy)=temp_bfemale_18_19(t_cindx);
+            temp_bmale_20_24_v(zz,yy)=temp_bmale_20_24(t_cindx);
+            temp_bfemale_20_24_v(zz,yy)=temp_bfemale_20_24(t_cindx);
+            temp_bmale_25_29_v(zz,yy)=temp_bmale_25_29(t_cindx);
+            temp_bfemale_25_29_v(zz,yy)=temp_bfemale_25_29(t_cindx);
+            temp_bmale_30_34_v(zz,yy)=temp_bmale_30_34(t_cindx);
+            temp_bfemale_30_34_v(zz,yy)=temp_bfemale_30_34(t_cindx);
+            temp_bmale_35_44_v(zz,yy)=temp_bmale_35_44(t_cindx);
+            temp_bfemale_35_44_v(zz,yy)=temp_bfemale_35_44(t_cindx);
+            temp_bmale_45_54_v(zz,yy)=temp_bmale_45_54(t_cindx);
+            temp_bfemale_45_54_v(zz,yy)=temp_bfemale_45_54(t_cindx);
+            temp_bmale_55_64_v(zz,yy)=temp_bmale_55_64(t_cindx);
+            temp_bfemale_55_64_v(zz,yy)=temp_bfemale_55_64(t_cindx);
+            temp_bmale_65_74_v(zz,yy)=temp_bmale_65_74(t_cindx);
+            temp_bfemale_65_74_v(zz,yy)=temp_bfemale_65_74(t_cindx);
+            temp_bmale_75_84_v(zz,yy)=temp_bmale_75_84(t_cindx);
+            temp_bfemale_75_84_v(zz,yy)=temp_bfemale_75_84(t_cindx);
+            temp_bmale_85_plus_v(zz,yy)=temp_bmale_85_plus(t_cindx);
+            temp_bfemale_85_plus_v(zz,yy)=temp_bfemale_85_plus(t_cindx);
         end
         
         t_cindx=ismember(RW.GEO_ID,State_Demo.State_ID(zz));
         if(sum(t_cindx)>0)
-            temp_white_v(zz,yy)=temp_white(t_cindx);
+            temp_wpop_total_v(zz,yy)=temp_wpop_total(t_cindx);
+            temp_wmale_total_v(zz,yy)=temp_wmale_total(t_cindx);
+            temp_wfemale_total_v(zz,yy)=temp_wfemale_total(t_cindx);
+            temp_wmale_18_19_v(zz,yy)=temp_wmale_18_19(t_cindx);
+            temp_wfemale_18_19_v(zz,yy)=temp_wfemale_18_19(t_cindx);
+            temp_wmale_20_24_v(zz,yy)=temp_wmale_20_24(t_cindx);
+            temp_wfemale_20_24_v(zz,yy)=temp_wfemale_20_24(t_cindx);
+            temp_wmale_25_29_v(zz,yy)=temp_wmale_25_29(t_cindx);
+            temp_wfemale_25_29_v(zz,yy)=temp_wfemale_25_29(t_cindx);
+            temp_wmale_30_34_v(zz,yy)=temp_wmale_30_34(t_cindx);
+            temp_wfemale_30_34_v(zz,yy)=temp_wfemale_30_34(t_cindx);
+            temp_wmale_35_44_v(zz,yy)=temp_wmale_35_44(t_cindx);
+            temp_wfemale_35_44_v(zz,yy)=temp_wfemale_35_44(t_cindx);
+            temp_wmale_45_54_v(zz,yy)=temp_wmale_45_54(t_cindx);
+            temp_wfemale_45_54_v(zz,yy)=temp_wfemale_45_54(t_cindx);
+            temp_wmale_55_64_v(zz,yy)=temp_wmale_55_64(t_cindx);
+            temp_wfemale_55_64_v(zz,yy)=temp_wfemale_55_64(t_cindx);
+            temp_wmale_65_74_v(zz,yy)=temp_wmale_65_74(t_cindx);
+            temp_wfemale_65_74_v(zz,yy)=temp_wfemale_65_74(t_cindx);
+            temp_wmale_75_84_v(zz,yy)=temp_wmale_75_84(t_cindx);
+            temp_wfemale_75_84_v(zz,yy)=temp_wfemale_75_84(t_cindx);
+            temp_wmale_85_plus_v(zz,yy)=temp_wmale_85_plus(t_cindx);
+            temp_wfemale_85_plus_v(zz,yy)=temp_wfemale_85_plus(t_cindx);
         end
     end
 end
@@ -453,11 +1014,25 @@ end
 
 for yy=1:length(Year_Data)
     temp_pop_total=temp_pop_total_v(:,yy);
-    temp_other_v=temp_pop_total-squeeze(temp_white_v(:,yy))-squeeze(temp_black_v(:,yy));
+    temp_other=temp_pop_total-temp_wpop_total_v(:,yy)-temp_bpop_total_v(:,yy);
+    temp_other_male=temp_male_total_v(:,yy)-temp_wmale_total_v(:,yy)-temp_bmale_total_v(:,yy);
+    temp_other_female=temp_female_total_v(:,yy)-temp_wfemale_total_v(:,yy)-temp_bfemale_total_v(:,yy);
     
-    temp_18_34=squeeze(temp_18_24_v(:,yy)+temp_25_29_v(:,yy)+temp_30_34_v(:,yy));
-    temp_35_49=squeeze(temp_35_39_v(:,yy)+temp_40_44_v(:,yy)+temp_45_49_v(:,yy));
-    temp_50_64=squeeze(temp_50_54_v(:,yy)+temp_55_59_v(:,yy)+temp_60_64_v(:,yy));
+
+    rm_45_49=temp_male_45_49_v(:,yy)./(temp_male_45_49_v(:,yy)+temp_male_50_54_v(:,yy));
+    rf_45_49=temp_female_45_49_v(:,yy)./(temp_female_45_49_v(:,yy)+temp_female_50_54_v(:,yy));
+
+    temp_18_34=temp_total_18_24_v(:,yy)+temp_total_25_29_v(:,yy)+temp_total_30_34_v(:,yy);
+    temp_35_49=temp_total_35_39_v(:,yy)+temp_total_40_44_v(:,yy)+temp_total_45_49_v(:,yy);
+    temp_50_64=temp_total_50_54_v(:,yy)+temp_total_55_59_v(:,yy)+temp_total_60_64_v(:,yy);
+
+    temp_male_18_34=temp_male_18_24_v(:,yy)+temp_male_25_29_v(:,yy)+temp_male_30_34_v(:,yy);
+    temp_male_35_49=temp_male_35_39_v(:,yy)+temp_male_40_44_v(:,yy)+temp_male_45_49_v(:,yy);
+    temp_male_50_64=temp_male_50_54_v(:,yy)+temp_male_55_59_v(:,yy)+temp_male_60_64_v(:,yy);
+
+    temp_female_18_34=temp_female_18_24_v(:,yy)+temp_female_25_29_v(:,yy)+temp_female_30_34_v(:,yy);
+    temp_female_35_49=temp_female_35_39_v(:,yy)+temp_female_40_44_v(:,yy)+temp_female_45_49_v(:,yy);
+    temp_female_50_64=temp_female_50_54_v(:,yy)+temp_female_55_59_v(:,yy)+temp_female_60_64_v(:,yy);
     
     if(Year_Data(yy)<2015)
         temp_LHS=squeeze((temp_E_Pop_18_v(:,yy).*(temp_LHS_18_v(:,yy))+temp_E_Pop_25_v(:,yy).*(temp_LHS1_25_v(:,yy)+temp_LHS2_25_v(:,yy)))./100);
@@ -473,7 +1048,17 @@ for yy=1:length(Year_Data)
         temp_18_34=(temp_18_34./100).*temp_pop_total;
         temp_35_49=(temp_35_49./100).*temp_pop_total;
         temp_50_64=(temp_50_64./100).*temp_pop_total;
-        temp_65_over=squeeze(temp_65_over_v(:,yy)./100).*temp_pop_total;
+        temp_65_plus=(temp_total_65_plus_v(:,yy)./100).*temp_pop_total;
+
+        temp_male_18_34=(temp_male_18_34./100).*temp_male_total_v(:,yy);
+        temp_male_35_49=(temp_male_35_49./100).*temp_male_total_v(:,yy);
+        temp_male_50_64=(temp_male_50_64./100).*temp_male_total_v(:,yy);
+        temp_male_65_plus=(temp_male_65_plus_v(:,yy)./100).*temp_male_total_v(:,yy);
+
+        temp_female_18_34=(temp_female_18_34./100).*temp_female_total_v(:,yy);
+        temp_female_35_49=(temp_female_35_49./100).*temp_female_total_v(:,yy);
+        temp_female_50_64=(temp_female_50_64./100).*temp_female_total_v(:,yy);
+        temp_female_65_plus=(temp_female_65_plus_v(:,yy)./100).*temp_female_total_v(:,yy);
     end
     
     temp_lower=squeeze(temp_EC_v(:,yy).*(temp_lower1_v(:,yy)+temp_lower2_v(:,yy)+temp_lower3_v(:,yy))./100);
@@ -481,22 +1066,58 @@ for yy=1:length(Year_Data)
     temp_middle=squeeze(temp_EC_v(:,yy).*(temp_middle1_v(:,yy)+temp_middle2_v(:,yy))./100);
     temp_upper=squeeze(temp_EC_v(:,yy).*(temp_upper1_v(:,yy)+temp_upper2_v(:,yy)+temp_upper3_v(:,yy))./100);
     
-    State_Demo.Sex.Male(:,yy)=squeeze(temp_male_v(:,yy));
-    State_Demo.Sex.Female(:,yy)=squeeze(temp_female_v(:,yy));
-    
-    State_Demo.Age.Range_18_to_34(:,yy)=temp_18_34;
-    State_Demo.Age.Range_35_to_49(:,yy)=temp_35_49;
-    State_Demo.Age.Range_50_to_64(:,yy)=temp_50_64;
-    State_Demo.Age.Range_65_and_older(:,yy)=temp_65_over;          
+    State_Demo.Population.Total(:,yy)=temp_pop_total;
+    State_Demo.Population.Male.Total(:,yy)=temp_male_total_v(:,yy);
+    State_Demo.Population.Female.Total(:,yy)=temp_male_total_v(:,yy);
+    State_Demo.Population.Age_18_34(:,yy)=temp_18_34;
+    State_Demo.Population.Age_35_49(:,yy)=temp_35_49;
+    State_Demo.Population.Age_50_64(:,yy)=temp_50_64;
+    State_Demo.Population.Age_65_plus(:,yy)=temp_65_plus;
+    State_Demo.Population.White(:,yy)=temp_wpop_total_v(:,yy);
+    State_Demo.Population.Black(:,yy)=temp_bpop_total_v(:,yy);
+    State_Demo.Population.Other(:,yy)=temp_other;
 
+    State_Demo.Population.Male.White_Total(:,yy)=temp_wmale_total_v(:,yy);
+    State_Demo.Population.Male.Black_Total(:,yy)=temp_bmale_total_v(:,yy);
+    State_Demo.Population.Male.Other_Total(:,yy)=temp_other_male;
+
+    State_Demo.Population.Female.White_Total(:,yy)=temp_wfemale_total_v(:,yy);
+    State_Demo.Population.Female.Black_Total(:,yy)=temp_bfemale_total_v(:,yy);
+    State_Demo.Population.Female.Other_Total(:,yy)=temp_other_female;
+
+    State_Demo.Population.Male.White.Age_18_34(:,yy)=temp_wmale_18_19_v(:,yy)+temp_wmale_20_24_v(:,yy)+temp_wmale_25_29_v(:,yy)+temp_wmale_30_34_v(:,yy);
+    State_Demo.Population.Male.White.Age_35_49(:,yy)=temp_wmale_35_44_v(:,yy)+rm_45_49.*temp_wmale_45_54_v(:,yy);
+    State_Demo.Population.Male.White.Age_50_64(:,yy)=(1-rm_45_49).*temp_wmale_45_54_v(:,yy)+temp_wmale_55_64_v(:,yy);
+    State_Demo.Population.Male.White.Age_65_plus(:,yy)=temp_wmale_65_74_v(:,yy)+temp_wmale_75_84_v(:,yy)+temp_wmale_85_plus_v(:,yy);
+
+    State_Demo.Population.Male.Black.Age_18_34(:,yy)=temp_bmale_18_19_v(:,yy)+temp_bmale_20_24_v(:,yy)+temp_bmale_25_29_v(:,yy)+temp_bmale_30_34_v(:,yy);
+    State_Demo.Population.Male.Black.Age_35_49(:,yy)=temp_bmale_35_44_v(:,yy)+rm_45_49.*temp_bmale_45_54_v(:,yy);
+    State_Demo.Population.Male.Black.Age_50_64(:,yy)=(1-rm_45_49).*temp_bmale_45_54_v(:,yy)+temp_bmale_55_64_v(:,yy);
+    State_Demo.Population.Male.Black.Age_65_plus(:,yy)=temp_bmale_65_74_v(:,yy)+temp_bmale_75_84_v(:,yy)+temp_bmale_85_plus_v(:,yy);
+
+    State_Demo.Population.Male.Other.Age_18_34(:,yy)=max(temp_male_18_34-State_Demo.Population.Male.White.Age_18_34(:,yy)-State_Demo.Population.Male.Black.Age_18_34(:,yy),0);
+    State_Demo.Population.Male.Other.Age_35_49(:,yy)=max(temp_male_35_49-State_Demo.Population.Male.White.Age_35_49(:,yy)-State_Demo.Population.Male.Black.Age_35_49(:,yy),0);
+    State_Demo.Population.Male.Other.Age_50_64(:,yy)=max(temp_male_50_64-State_Demo.Population.Male.White.Age_50_64(:,yy)-State_Demo.Population.Male.Black.Age_50_64(:,yy),0);
+    State_Demo.Population.Male.Other.Age_65_plus(:,yy)=max(temp_male_65_plus-State_Demo.Population.Male.White.Age_65_plus(:,yy)-State_Demo.Population.Male.Black.Age_65_plus(:,yy),0);
+    
+    State_Demo.Population.Female.White.Age_18_34(:,yy)=temp_wfemale_18_19_v(:,yy)+temp_wfemale_20_24_v(:,yy)+temp_wfemale_25_29_v(:,yy)+temp_wfemale_30_34_v(:,yy);
+    State_Demo.Population.Female.White.Age_35_49(:,yy)=temp_wfemale_35_44_v(:,yy)+rf_45_49.*temp_wfemale_45_54_v(:,yy);
+    State_Demo.Population.Female.White.Age_50_64(:,yy)=(1-rf_45_49).*temp_wfemale_45_54_v(:,yy)+temp_wfemale_55_64_v(:,yy);
+    State_Demo.Population.Female.White.Age_65_plus(:,yy)=temp_wfemale_65_74_v(:,yy)+temp_wfemale_75_84_v(:,yy)+temp_wfemale_85_plus_v(:,yy);
+
+    State_Demo.Population.Female.Black.Age_18_34(:,yy)=temp_bfemale_18_19_v(:,yy)+temp_bfemale_20_24_v(:,yy)+temp_bfemale_25_29_v(:,yy)+temp_bfemale_30_34_v(:,yy);
+    State_Demo.Population.Female.Black.Age_35_49(:,yy)=temp_bfemale_35_44_v(:,yy)+rf_45_49.*temp_bfemale_45_54_v(:,yy);
+    State_Demo.Population.Female.Black.Age_50_64(:,yy)=(1-rf_45_49).*temp_bfemale_45_54_v(:,yy)+temp_bfemale_55_64_v(:,yy);
+    State_Demo.Population.Female.Black.Age_65_plus(:,yy)=temp_bfemale_65_74_v(:,yy)+temp_bfemale_75_84_v(:,yy)+temp_bfemale_85_plus_v(:,yy);
+
+    State_Demo.Population.Female.Other.Age_18_34(:,yy)=max(temp_female_18_34-State_Demo.Population.Female.White.Age_18_34(:,yy)-State_Demo.Population.Female.Black.Age_18_34(:,yy),0);
+    State_Demo.Population.Female.Other.Age_35_49(:,yy)=max(temp_female_35_49-State_Demo.Population.Female.White.Age_35_49(:,yy)-State_Demo.Population.Female.Black.Age_35_49(:,yy),0);
+    State_Demo.Population.Female.Other.Age_50_64(:,yy)=max(temp_female_50_64-State_Demo.Population.Female.White.Age_50_64(:,yy)-State_Demo.Population.Female.Black.Age_50_64(:,yy),0);
+    State_Demo.Population.Female.Other.Age_65_plus(:,yy)=max(temp_female_65_plus-State_Demo.Population.Female.White.Age_65_plus(:,yy)-State_Demo.Population.Female.Black.Age_65_plus(:,yy),0);
+    
     State_Demo.Education.Less_than_High_School(:,yy)=temp_LHS;          
     State_Demo.Education.High_School(:,yy)=temp_HS;          
     State_Demo.Education.College(:,yy)=temp_C;     
-    
-    State_Demo.Race.White(:,yy)=squeeze(temp_white_v(:,yy));          
-    State_Demo.Race.Black(:,yy)=squeeze(temp_black_v(:,yy));          
-    State_Demo.Race.Other(:,yy)=squeeze(temp_other_v);
-    
     
     State_Demo.Economic.Lower(:,yy)=temp_lower;
     State_Demo.Economic.Working(:,yy)=temp_working;
@@ -511,39 +1132,83 @@ State_Demo.Political.Democratic=squeeze(Democratic_v(:,:));
 State_Demo.Political.Republican=squeeze(Republican_v(:,:));
 State_Demo.Political.Other=1-State_Demo.Political.Republican-State_Demo.Political.Democratic;
 
-for ss=1:size(State_Demo.Sex.Male,1)
-    if(isnan(sum(State_Demo.Sex.Male(ss,:))))
-        tf=~isnan(State_Demo.Sex.Male(ss,:));
-        State_Demo.Sex.Male(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Sex.Male(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Sex.Female(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Sex.Female(ss,tf)),State_Demo.Year_Data(~tf)));
+for ss=1:size(State_Demo.Population.Male.Other.Age_18_34,1)
+    temp_s=State_Demo.Population.Male.Black.Age_18_34(ss,:)+State_Demo.Population.Male.White.Age_18_34(ss,:)+State_Demo.Population.Male.Other.Age_18_34(ss,:)+State_Demo.Population.Female.Black.Age_18_34(ss,:)+State_Demo.Population.Female.White.Age_18_34(ss,:)+State_Demo.Population.Female.Other.Age_18_34(ss,:);
+    temp_s=temp_s+State_Demo.Population.Male.Black.Age_35_49(ss,:)+State_Demo.Population.Male.White.Age_35_49(ss,:)+State_Demo.Population.Male.Other.Age_35_49(ss,:)+State_Demo.Population.Female.Black.Age_35_49(ss,:)+State_Demo.Population.Female.White.Age_35_49(ss,:)+State_Demo.Population.Female.Other.Age_35_49(ss,:);
+    temp_s=temp_s+State_Demo.Population.Male.Black.Age_50_64(ss,:)+State_Demo.Population.Male.White.Age_50_64(ss,:)+State_Demo.Population.Male.Other.Age_50_64(ss,:)+State_Demo.Population.Female.Black.Age_50_64(ss,:)+State_Demo.Population.Female.White.Age_50_64(ss,:)+State_Demo.Population.Female.Other.Age_50_64(ss,:);
+    temp_s=temp_s+State_Demo.Population.Male.Black.Age_65_plus(ss,:)+State_Demo.Population.Male.White.Age_65_plus(ss,:)+State_Demo.Population.Male.Other.Age_65_plus(ss,:)+State_Demo.Population.Female.Black.Age_65_plus(ss,:)+State_Demo.Population.Female.White.Age_65_plus(ss,:)+State_Demo.Population.Female.Other.Age_65_plus(ss,:);
 
-        State_Demo.Age.Range_18_to_34(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Age.Range_18_to_34(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Age.Range_35_to_49(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Age.Range_35_to_49(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Age.Range_50_to_64(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Age.Range_50_to_64(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Age.Range_65_and_older(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Age.Range_65_and_older(ss,tf)),State_Demo.Year_Data(~tf)));        
+    if(isnan(sum(temp_s)))
+        tf=~isnan(temp_s);
+        State_Demo.Population.Male.Other.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Other.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Other.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Other.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Other.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Other.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Other.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Other.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Female.Other.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Other.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Other.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Other.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Other.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Other.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Other.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Other.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Male.White.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.White.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.White.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.White.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.White.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.White.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.White.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.White.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Female.White.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.White.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.White.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.White.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.White.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.White.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.White.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.White.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        
+        State_Demo.Population.Male.Black.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Black.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Black.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Black.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Black.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Black.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Black.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Black.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Female.Black.Age_18_34(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Black.Age_18_34(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Black.Age_35_49(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Black.Age_35_49(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Black.Age_50_64(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Black.Age_50_64(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Black.Age_65_plus(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Black.Age_65_plus(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Age_18_34(ss,~tf)=State_Demo.Population.Male.Black.Age_18_34(ss,~tf)+State_Demo.Population.Male.White.Age_18_34(ss,~tf)+State_Demo.Population.Male.Other.Age_18_34(ss,~tf)+State_Demo.Population.Female.Black.Age_18_34(ss,~tf)+State_Demo.Population.Female.White.Age_18_34(ss,~tf)+State_Demo.Population.Female.Other.Age_18_34(ss,~tf);
+        State_Demo.Population.Age_35_49(ss,~tf)=State_Demo.Population.Male.Black.Age_35_49(ss,~tf)+State_Demo.Population.Male.White.Age_35_49(ss,~tf)+State_Demo.Population.Male.Other.Age_35_49(ss,~tf)+State_Demo.Population.Female.Black.Age_35_49(ss,~tf)+State_Demo.Population.Female.White.Age_35_49(ss,~tf)+State_Demo.Population.Female.Other.Age_35_49(ss,~tf);
+        State_Demo.Population.Age_50_64(ss,~tf)=State_Demo.Population.Male.Black.Age_50_64(ss,~tf)+State_Demo.Population.Male.White.Age_50_64(ss,~tf)+State_Demo.Population.Male.Other.Age_50_64(ss,~tf)+State_Demo.Population.Female.Black.Age_50_64(ss,~tf)+State_Demo.Population.Female.White.Age_50_64(ss,~tf)+State_Demo.Population.Female.Other.Age_50_64(ss,~tf);
+        State_Demo.Population.Age_65_plus(ss,~tf)=State_Demo.Population.Male.Black.Age_65_plus(ss,~tf)+State_Demo.Population.Male.White.Age_65_plus(ss,~tf)+State_Demo.Population.Male.Other.Age_65_plus(ss,~tf)+State_Demo.Population.Female.Black.Age_65_plus(ss,~tf)+State_Demo.Population.Female.White.Age_65_plus(ss,~tf)+State_Demo.Population.Female.Other.Age_65_plus(ss,~tf);
     end
     if(isnan(sum(State_Demo.Education.Less_than_High_School(ss,:))))     
         tf=~isnan(State_Demo.Education.Less_than_High_School(ss,:));
-        State_Demo.Education.Less_than_High_School(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Education.Less_than_High_School(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Education.High_School(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Education.High_School(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Education.College(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Education.College(ss,tf)),State_Demo.Year_Data(~tf)));
+        State_Demo.Education.Less_than_High_School(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Education.Less_than_High_School(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Education.High_School(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Education.High_School(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Education.College(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Education.College(ss,tf)),State_Demo.Year_Data(~tf)),0);
     end
-    if(isnan(sum(State_Demo.Race.White(ss,:))))
-        tf=~isnan(State_Demo.Race.White(ss,:));
-        State_Demo.Race.White(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Race.White(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Race.Black(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Race.Black(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Race.Other(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Race.Other(ss,tf)),State_Demo.Year_Data(~tf)));
+    if(isnan(sum(State_Demo.Population.Male.Other_Total(ss,:))))
+        tf=~isnan(State_Demo.Population.Male.Other_Total(ss,:));
+        State_Demo.Population.Male.Other_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Other_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.White_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.White_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Male.Black_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Male.Black_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Female.Other_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Other_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.White_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.White_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Population.Female.Black_Total(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Female.Black_Total(ss,tf)),State_Demo.Year_Data(~tf)),0);
+
+        State_Demo.Population.Male.Total(ss,~tf)=State_Demo.Population.Male.Other_Total(ss,~tf)+State_Demo.Population.Male.White_Total(ss,~tf)+State_Demo.Population.Male.Black_Total(ss,~tf);
+        State_Demo.Population.Female.Total(ss,~tf)=State_Demo.Population.Female.Other_Total(ss,~tf)+State_Demo.Population.Female.White_Total(ss,~tf)+State_Demo.Population.Female.Black_Total(ss,~tf);
+
+        State_Demo.Population.White(ss,~tf)=State_Demo.Population.Male.White_Total(ss,~tf)+State_Demo.Population.Female.White_Total(ss,~tf);
+        State_Demo.Population.Black(ss,~tf)=State_Demo.Population.Male.Black_Total(ss,~tf)+State_Demo.Population.Female.Black_Total(ss,~tf);
+        State_Demo.Population.Other(ss,~tf)=State_Demo.Population.Male.Other_Total(ss,~tf)+State_Demo.Population.Female.Other_Total(ss,~tf);
+
     end
     if(isnan(sum(State_Demo.Economic.Lower(ss,:)))) 
         tf=~isnan(State_Demo.Economic.Lower(ss,:));       
-        State_Demo.Economic.Lower(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Economic.Lower(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Economic.Working(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Economic.Working(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Economic.Middle(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Economic.Middle(ss,tf)),State_Demo.Year_Data(~tf)));
-        State_Demo.Economic.Upper(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Economic.Upper(ss,tf)),State_Demo.Year_Data(~tf)));
+        State_Demo.Economic.Lower(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Economic.Lower(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Economic.Working(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Economic.Working(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Economic.Middle(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Economic.Middle(ss,tf)),State_Demo.Year_Data(~tf)),0);
+        State_Demo.Economic.Upper(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Economic.Upper(ss,tf)),State_Demo.Year_Data(~tf)),0);
     end
     if(isnan(sum(State_Demo.Income(ss,:))))
         tf=~isnan(State_Demo.Income(ss,:));
-        State_Demo.Income(ss,~tf)=exp(pchip(State_Demo.Year_Data(tf),log(State_Demo.Income(ss,tf)),State_Demo.Year_Data(~tf)));
+        State_Demo.Income(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Income(ss,tf)),State_Demo.Year_Data(~tf)),0);
     end
 
     if(isnan(sum(State_Demo.Political.Democratic(ss,:))))        
@@ -565,5 +1230,7 @@ for ss=1:size(State_Demo.Sex.Male,1)
 
 end
 save(['State_Population.mat'],'State_Demo');
+
+
 
         

@@ -6,8 +6,8 @@ else
     T=readtable([pwd '\State_Data\Demographic_Data\State_Exemptions.xlsx'],'Sheet','Others');
 end
 
-Year_Inq=[2015 2016 2017 2018 2019 2020 2021 2022];
-Table_Ind=[3 11;4 12;5 13;6 14;7 15;8 16;9 17;10 18];
+Year_Inq=[2017 2018 2019 2020 2021 2022];
+Table_Ind=[3 9;4 10;5 11;6 12;7 13;8 14;];
 
 ty=Year_Inq==Year_Plot;
 

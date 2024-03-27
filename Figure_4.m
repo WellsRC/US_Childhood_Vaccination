@@ -2,7 +2,7 @@ function Figure_4
 clc;
 close all;
 
-S=shaperead([pwd '\State_Data\County_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
+S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 
 State_FIPc={S.STATEFP};
 State_FIP=zeros(size(State_FIPc));
