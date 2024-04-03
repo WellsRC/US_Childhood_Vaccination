@@ -1068,7 +1068,7 @@ for yy=1:length(Year_Data)
     
     State_Demo.Population.Total(:,yy)=temp_pop_total;
     State_Demo.Population.Male.Total(:,yy)=temp_male_total_v(:,yy);
-    State_Demo.Population.Female.Total(:,yy)=temp_male_total_v(:,yy);
+    State_Demo.Population.Female.Total(:,yy)=temp_female_total_v(:,yy);
     State_Demo.Population.Age_18_34(:,yy)=temp_18_34;
     State_Demo.Population.Age_35_49(:,yy)=temp_35_49;
     State_Demo.Population.Age_50_64(:,yy)=temp_50_64;

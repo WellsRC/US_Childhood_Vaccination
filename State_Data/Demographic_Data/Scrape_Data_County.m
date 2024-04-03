@@ -1059,7 +1059,7 @@ for yy=1:length(Year_Data)
     
     County_Demo.Population.Total(:,yy)=temp_pop_total;
     County_Demo.Population.Male.Total(:,yy)=temp_male_total_v(:,yy);
-    County_Demo.Population.Female.Total(:,yy)=temp_male_total_v(:,yy);
+    County_Demo.Population.Female.Total(:,yy)=temp_female_total_v(:,yy);
     County_Demo.Population.Age_18_34(:,yy)=temp_18_34;
     County_Demo.Population.Age_35_49(:,yy)=temp_35_49;
     County_Demo.Population.Age_50_64(:,yy)=temp_50_64;
