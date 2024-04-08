@@ -80,16 +80,15 @@ Z.other=Z.other(ismember(Trust_Year_Data,Data_Year));
 
 indx=1:24; % In case want to exploe fitting specific stratefications
 
-
-lb=repmat([-250 -250 -250 -250],length(indx),1);
-ub=repmat([250 250 250 250],length(indx),1);
-
-lb=lb(:)';
-ub=ub(:)';
-
 d_err=Inf;
 while(d_err>10^(-1))
     if(isinf(d_err))
+        lb=repmat([-10 -10 -10 -10],length(indx),1);
+        ub=repmat([10 10 10 10],length(indx),1);
+
+        lb=lb(:)';
+        ub=ub(:)';
+
         options=optimoptions('surrogateopt','MaxFunctionEvaluations',2500,'UseParallel',true,'PlotFcn','surrogateoptplot');
     else
         l_samp=lhsdesign(249,length(beta_temp));
@@ -100,6 +99,12 @@ while(d_err>10^(-1))
     end
 
     [beta_temp,err1]=surrogateopt(@(x)LS_Trust_Fit(x,Z,M_X_t,county_weight,indx,true),lb,ub,options);
+
+    lb=repmat([-250 -250 -250 -250],length(indx),1);
+    ub=repmat([250 250 250 250],length(indx),1);
+    
+    lb=lb(:)';
+    ub=ub(:)';
     
     if(isinf(d_err))
         options=optimoptions("fmincon","MaxFunctionEvaluations",10^6,'MaxIterations',10^6);

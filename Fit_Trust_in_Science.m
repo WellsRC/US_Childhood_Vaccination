@@ -110,6 +110,7 @@ while(d_err>10^(-1))
 
     lb=lb(:)';
     ub=ub(:)';
+    
     if(isinf(d_err))
         options=optimoptions("fmincon","MaxFunctionEvaluations",10^6,'MaxIterations',10^6);
     else

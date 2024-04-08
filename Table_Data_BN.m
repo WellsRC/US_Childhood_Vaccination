@@ -2,46 +2,11 @@ clear;
 clc;
 close all;
 
-S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
-State_FIPc={S.STATEFP};
-State_FIP=zeros(size(State_FIPc));
-for ii=1:length(State_FIP)
-State_FIP(ii)=str2double(State_FIPc{ii});
-end
-S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
-County_ID_temp={S.GEOID};
-County_ID=zeros(size(County_ID_temp));
-for ii=1:length(County_ID)
-County_ID(ii)=str2double(County_ID_temp{ii});
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Obtain County and State IDS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+[State_ID,County_ID]=Read_ID_Number();
 
-State_FIPc={S.STATEFP};
-County_State_FIP=zeros(size(State_FIPc));
-for ii=1:length(County_State_FIP)
-County_State_FIP(ii)=str2double(State_FIPc{ii});
-end
-
-clearvars -except County_ID
-
-S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
-
-State_FIPc={S.STATEFP};
-State_FIP=zeros(size(State_FIPc));
-
-for ii=1:length(State_FIP)
-  State_FIP(ii)=str2double(State_FIPc{ii});  
-end
-
-S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
-
-State_STATEFP={S.STATEFP};
-State_ID=zeros(size(State_STATEFP));
-
-for ii=1:length(State_STATEFP)
-  State_ID(ii)=str2double(State_STATEFP{ii});  
-end
-State_ID=unique(State_ID);
-clearvars -except State_ID County_ID
 Yr=[2017:2022];
 
 Var_Name={'Trust_in_Medicine','Trust_in_Science'};

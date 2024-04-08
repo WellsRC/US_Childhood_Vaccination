@@ -916,6 +916,7 @@ table_year=unique(T.year);
 
 temp_D=NaN.*zeros(length(County_Demo.County_ID),length(table_year));
 temp_R=NaN.*zeros(length(County_Demo.County_ID),length(table_year));
+temp_O=NaN.*zeros(length(County_Demo.County_ID),length(table_year));
 
 
 county_fips=T.county_fips;
@@ -934,6 +935,9 @@ for yy=1:length(table_year)
             if(sum(t_r)>0)
                 temp_R(tf,yy)=sum(TS.candidatevotes(t_r))./unique(TS.totalvotes(t_r));
             end
+            if(sum(t_o)>0)
+                temp_O(tf,yy)=sum(TS.candidatevotes(t_o))./unique(TS.totalvotes(t_o));
+            end
         end        
     end
 end
@@ -944,13 +948,16 @@ County_Demo.Political.Other=NaN.*zeros(length(County_Demo.County_ID),length(Year
 
 temp_D(temp_D==0)=10^(-16);
 temp_R(temp_R==0)=10^(-16);
+temp_O(temp_O==0)=10^(-16);
 
 temp_D(temp_D==1)=1-10^(-16);
 temp_R(temp_R==1)=1-10^(-16);
+temp_O(temp_O==1)=1-10^(-16);
 
 
 Democratic_v=NaN.*zeros(length(County_Demo.County_ID),length(Year_Data));
 Republican_v=NaN.*zeros(length(County_Demo.County_ID),length(Year_Data));
+Other_v=NaN.*zeros(length(County_Demo.County_ID),length(Year_Data));
 
 for jj=1:length(County_Demo.County_ID)       
     z=log(squeeze(temp_D(jj,:))./(1-squeeze(temp_D(jj,:))));   
@@ -962,7 +969,12 @@ for jj=1:length(County_Demo.County_ID)
     if(sum(~isnan(z))>=2)
         z_new=pchip(table_year(~isnan(z)),z(~isnan(z)),Year_Data);
         Republican_v(jj,:)=real(1./(1+exp(-z_new)));
-    end        
+    end 
+    z=log(squeeze(temp_O(jj,:))./(1-squeeze(temp_O(jj,:))));  
+    if(sum(~isnan(z))>=2)
+        z_new=pchip(table_year(~isnan(z)),z(~isnan(z)),Year_Data);
+        Other_v(jj,:)=real(1./(1+exp(-z_new)));
+    end    
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Health insurance under 19
@@ -1119,9 +1131,11 @@ for yy=1:length(Year_Data)
         
 end
 County_Demo.Percent_Uninsured_Under_19=squeeze(temp_UI_v(:,:));
-County_Demo.Political.Democratic=squeeze(Democratic_v(:,:));
-County_Demo.Political.Republican=squeeze(Republican_v(:,:));
-County_Demo.Political.Other=1-County_Demo.Political.Republican-County_Demo.Political.Democratic;
+
+temp_pol=squeeze(Democratic_v(:,:))+squeeze(Republican_v(:,:))+squeeze(Other_v(:,:));
+County_Demo.Political.Democratic=squeeze(Democratic_v(:,:))./temp_pol;
+County_Demo.Political.Republican=squeeze(Republican_v(:,:))./temp_pol;
+County_Demo.Political.Other=squeeze(Other_v(:,:))./temp_pol;
 
 for ss=1:size(County_Demo.Population.Male.Other.Age_18_34,1)
     temp_s=County_Demo.Population.Male.Black.Age_18_34(ss,:)+County_Demo.Population.Male.White.Age_18_34(ss,:)+County_Demo.Population.Male.Other.Age_18_34(ss,:)+County_Demo.Population.Female.Black.Age_18_34(ss,:)+County_Demo.Population.Female.White.Age_18_34(ss,:)+County_Demo.Population.Female.Other.Age_18_34(ss,:);

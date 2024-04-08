@@ -71,7 +71,6 @@ T_sorted=sortrows(T,width(T),'descend');
 writetable(T_sorted,'Supplement_Table_Model_Comparison.xlsx','Sheet','Table_All_Sorted');
 
 X=T(:,1:10);
-X.PandemicDirectlyImpactVaccination=double(strcmp(X.PandemicDirectlyImpactVaccination,'Yes'));
 X.Trust_Medicine_or_Science=min(X.TrustInMedicine+X.TrustInScience,1);
 VN=X.Properties.VariableNames;
 X=table2array(X);
@@ -89,13 +88,14 @@ T_W.Properties.VariableNames(2:end)=VN;
 writetable(T_W,'Supplement_Table_Model_Comparison.xlsx','Sheet','Weights');
 
 
+C=readtable('County_Level_Cross_Validation.xlsx','Sheet',['Coefficients_MMR' ]);
 
 W=cell(4,1);
 W{1}=Weight_MMR';
 W{2}=Weight_DTaP';
 W{3}=Weight_IPV';
 W{4}=Weight_VAR';
-Z=zeros(4,13);
+Z=zeros(4,width(C));
 Inqv={'MMR','DTaP','Polio','VAR'};
 for vv=1:4
     C=readtable('County_Level_Cross_Validation.xlsx','Sheet',['Coefficients_' Inqv{vv} ]);
@@ -104,8 +104,10 @@ for vv=1:4
     Z(vv,:)=W{vv}*table2array(C);
 
 end
+
+temp_VN=C.Properties.VariableNames;
 Vaccine=Vaccine(1:end-1);
-Variables={'Vaccine','Intercempt','Pandemic Directly Impact Vaccination','Philosophical Exemptions','Religous Exemptions','Economic','Education','Income','Politcal','Race','Sex','Trust in Medicine','Trust in Science','Uninsured under 19'};
+Variables={'Vaccine',temp_VN{:}};
 T_C=[table(Vaccine) array2table(Z)];
 T_C.Properties.VariableNames=Variables;
 

@@ -11,7 +11,7 @@ tv=strcmp(Var_1,Inq);
 Table_Ind=Table_Ind(ty,:);
 Table_Ind=Table_Ind(:,tv);
 
-T=readtable([pwd '\State_Data\County_Data\County_Level_Data.xlsx']);
+T=readtable([pwd '\State_Data\Demographic_Data\County_Level_Data.xlsx']);
 
 T_fips=T.CountyFIPS;
 raw_data=table2array(T(:,Table_Ind));
