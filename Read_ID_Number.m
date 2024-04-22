@@ -1,6 +1,6 @@
 function [State_ID,County_ID,County_State_ID]=Read_ID_Number()
 
-    S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
+    S=shaperead([pwd '\Spatial_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
     State_FIPc={S.STATEFP};
     State_FIP=zeros(size(State_FIPc));
     
@@ -19,7 +19,7 @@ function [State_ID,County_ID,County_State_ID]=Read_ID_Number()
 
     for ii=1:length(County_ID)
         County_ID(ii)=str2double(County_ID_temp{ii});
-        County_State_ID=str2double(State_STATEFP{ii});
+        County_State_ID(ii)=str2double(State_STATEFP{ii});
     end
 
     State_STATEFP=unique({S.STATEFP});

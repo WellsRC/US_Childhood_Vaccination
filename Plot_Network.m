@@ -2,11 +2,10 @@ clear;
 clc;
 close all;
 
-p=0.01;
-T=readtable('Network_Trust.xlsx','Sheet',['p=' num2str(p) ]);
+T=readtable('Final_Bayesian_Network.xlsx');
 
-A=table2array(T(:,2:end));
-N=T.Variable;
+A=table2array(T(:,2:end))';
+N=T.Child_Variable;
 
 G=digraph(A,N);
 
@@ -34,4 +33,4 @@ plot(G,'EdgeColor',CE,'LineWidth',2,'Marker','s','Markersize',10,'NodeFontSize',
 axis off
 box off
 
-print(gcf,['Network_Trust_p=' num2str(p) '.png'],'-dpng','-r600');
+print(gcf,['Bayesian_Network_Trust.png'],'-dpng','-r600');

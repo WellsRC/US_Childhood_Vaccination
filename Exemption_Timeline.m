@@ -1,9 +1,9 @@
 function [RVE,PVE] = Exemption_Timeline(Year_Plot,State_ID,Vac)
 
 if(strcmp(Vac,'MMR'))
-    T=readtable([pwd '\State_Data\Demographic_Data\State_Exemptions.xlsx'],'Sheet','MMR');
+    T=readtable([pwd '\Spatial_Data\Vaccination_Data\State_Exemptions.xlsx'],'Sheet','MMR');
 else
-    T=readtable([pwd '\State_Data\Demographic_Data\State_Exemptions.xlsx'],'Sheet','Others');
+    T=readtable([pwd '\Spatial_Data\Vaccination_Data\State_Exemptions.xlsx'],'Sheet','Others');
 end
 
 Year_Inq=[2017 2018 2019 2020 2021 2022];

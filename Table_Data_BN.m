@@ -37,14 +37,24 @@ for yy=1:length(Yr)
     
 end
 xt=[cell2mat(X_State) cell2mat(D_State); cell2mat(X_County) cell2mat(D_County)];
+xt(xt==1)=1-10^(-8);
+xt(xt==0)=10^(-8);
 xt=xt(~isnan(sum(xt,2)),:);
 clc;
 XT=([log(xt(:,1:8)./(1-xt(:,1:8))) log(xt(:,9))]);  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Income variable
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
 T=[array2table(XT) ];
 T.Properties.VariableNames=VN;
 
 writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Data');
-    
+   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Income variable and set baseline conditions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
     A={'Sex'};
     B={'Race'};
     Method={'NotAToBOrBToA'};
@@ -53,45 +63,492 @@ writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Data');
 
     T=[table(A,B,Method,FailureMode,TemporalOrder)];
 
-    A={'Economic';'Education';'Income';'Political';'Race';'Sex';'Uninsured_19_under'};
-    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
-    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
-    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
-    TemporalOrder=cell(7,1);
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Income';'Income';'Income';'Income';'Income';'Income';'Income'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
 
-    A={'Economic';'Education';'Income';'Political';'Race';'Sex';'Uninsured_19_under'};
-    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
-    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
-    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
-    TemporalOrder=cell(7,1);
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
 
-    A={'Economic';'Education';'Income';'Race';'Sex'};
-    B={'Political';'Political';'Political';'Political';'Political'};
-    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
-    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
-    TemporalOrder=cell(5,1);
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
 
 
-    B={'Economic';'Education';'Income'};
-    A={'Race';'Race';'Race'};
-    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists'};
-    FailureMode={'ThrowException';'ThrowException';'ThrowException'};
-    TemporalOrder=cell(3,1);
+    B={'Economic';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
 
-    B={'Economic';'Education';'Income'};
-    A={'Sex';'Sex';'Sex'};
-    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists'};
-    FailureMode={'ThrowException';'ThrowException';'ThrowException'};
-    TemporalOrder=cell(3,1);
+    B={'Economic';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
 
     T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
 
-    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Conditions','WriteVariableNames',true);
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Economic','WriteVariableNames',true);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Income variable and set conditions for Politcal to
+% Trust_In_Science
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Income';'Income';'Income';'Income';'Income';'Income';'Income'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Economic';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Economic';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Economic_P2S','WriteVariableNames',true);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Income variable and set conditions for Politcal to
+% Trust_In_Medicine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Income';'Income';'Income';'Income';'Income';'Income';'Income'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Economic';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Economic';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Economic_P2M','WriteVariableNames',true);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Income variable and set conditions for Politcal to
+% Trust_In_Medicine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+    
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Income';'Income';'Income';'Income';'Income';'Income';'Income'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Economic';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Economic';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Economic_P2MS','WriteVariableNames',true);
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Economic variable and set baseline conditions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Economic';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Income';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Income';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Income','WriteVariableNames',true);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Economic variable and set conditions for Politcal to
+% Trust_In_Science
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Income';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Income';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Income_P2S','WriteVariableNames',true);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Economic variable and set conditions for Politcal to
+% Trust_In_Medicine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Income';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Income';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Income_P2M','WriteVariableNames',true);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% Remove Economic variable and set conditions for Politcal to
+% Trust_In_Medicine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+    A={'Sex'};
+    B={'Race'};
+    Method={'NotAToBOrBToA'};
+    FailureMode={'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Economic';'Education';'Political';'Race';'Sex';'Uninsured_19_under';'Trust_in_Science';'Trust_in_Medicine'};
+    B={'Income';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic';'Economic'};
+    Method={'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA';'NotAToBOrBToA'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science';'Trust_in_Science'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Political';'Race';'Sex';'Uninsured_19_under'};
+    B={'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine';'Trust_in_Medicine'};
+    Method={'AToBIfExists';'AToBIfExists';'AToB';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    A={'Income';'Education';'Race';'Sex'};
+    B={'Political';'Political';'Political';'Political'};
+    Method={'AToBIfExists';'AToBIfExists';'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+
+    B={'Income';'Education'};
+    A={'Race';'Race'};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException'};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    B={'Income';'Education'};
+    A={'Sex';'Sex';};
+    Method={'AToBIfExists';'AToBIfExists'};
+    FailureMode={'ThrowException';'ThrowException';};
+    TemporalOrder=cell(length(A),1);
+
+    T=[T; table(A,B,Method,FailureMode,TemporalOrder)];
+
+    writetable(T,['Data_BN_Trust.xlsx'],'Sheet','Con_Income_P2MS','WriteVariableNames',true);

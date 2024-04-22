@@ -1,43 +1,22 @@
 clear;
-S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 
-State_FIPc={S.STATEFP};
-State_FIP=zeros(size(State_FIPc));
-
-for ii=1:length(State_FIP)
-  State_FIP(ii)=str2double(State_FIPc{ii});  
-end
-
-S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
-
-
-S_ID_temp={S.GEOID};
-S_ID=zeros(size(S_ID_temp));
-
-for ii=1:length(S_ID)
-  S_ID(ii)=str2double(S_ID_temp{ii});  
-end
-
+[~,County_ID,~]=Read_ID_Number();
 
 Factor_S={'Economic','Education','Political'};
-[County_Trust_in_Science,County_Trust_in_Medicine,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{1},S_ID);
+[County_Trust_in_Science,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{1},County_ID);
 
-S_X_t=zeros(length(Factor_S),length(S_ID),length(Data_Year));
-M_X_t=zeros(length(Factor_S),length(S_ID),length(Data_Year));
+S_X_t=zeros(length(Factor_S),length(County_ID),length(Data_Year));
 
 for jj=1:length(Factor_S)        
-    [County_Trust_in_Science,County_Trust_in_Medicine,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{jj},S_ID);
+    [County_Trust_in_Science,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{jj},County_ID);
     S_X_t(jj,:,:)=County_Trust_in_Science;
-    M_X_t(jj,:,:)=County_Trust_in_Medicine;
     for yy=1:length(Data_Year)
         tt=squeeze(S_X_t(jj,:,yy));
         S_X_t(jj,isnan(tt),yy)=median(tt(~isnan(tt)));
-        tt=squeeze(M_X_t(jj,:,yy));
-        M_X_t(jj,isnan(tt),yy)=median(tt(~isnan(tt)));
     end
 end
 
-load([pwd '\State_Data\Trust_in_Science_Stratification.mat']);
+load([pwd '\Spatial_Data\Trust_Science_Medicine\Trust_in_Science_Stratification.mat']);
 
 Y_t=Trust_in_Science.National.Great_Deal+0.5.*Trust_in_Science.National.Only_Some;
 Z.national=log(Y_t./(1-Y_t));
@@ -84,7 +63,20 @@ Z.other=Z.other(ismember(Trust_Year_Data,Data_Year));
 
 indx=1:24; % In case want to exploe fitting specific stratefications
 
-d_err=Inf;
+if(isfile("Parameters_Trust_In_Science.mat"))
+    d_err=1;
+    load('Parameters_Trust_In_Science','beta_z_Science');
+    beta_temp=beta_z_Science;
+    beta_temp=beta_temp(:)';
+    
+    lb=repmat([-250 -250 -250 -250],length(indx),1);
+    ub=repmat([250 250 250 250],length(indx),1);
+
+    lb=lb(:)';
+    ub=ub(:)';
+else
+    d_err=Inf;
+end
 while(d_err>10^(-1))
     if(isinf(d_err))
         lb=repmat([-10 -10 -10 -10],length(indx),1);

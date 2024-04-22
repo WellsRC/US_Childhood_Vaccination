@@ -1,31 +1,25 @@
-function Figure_4
+function Figure_4(Year_Inq)
 clc;
 close all;
 
-S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
-
+S=shaperead([pwd '\Spatial_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 State_FIPc={S.STATEFP};
 State_FIP=zeros(size(State_FIPc));
+
 for ii=1:length(State_FIP)
-State_FIP(ii)=str2double(State_FIPc{ii});
+    State_FIP(ii)=str2double(State_FIPc{ii});
 end
+
 S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
 
-County_ID_temp={S.GEOID};
-County_ID=zeros(size(County_ID_temp));
-for ii=1:length(County_ID)
-    County_ID(ii)=str2double(County_ID_temp{ii});
-end
+[~,County_ID,~]=Read_ID_Number();
 
-Vac_Nam_v={'MMR','DTaP','IPV','VAR'};
+Vac_Nam_v={'MMR','DTaP','Polio','VAR'};
+Vac_Title_v={'MMR','DTaP','IPV','VAR'};
+
 for vv=1:4
-    Vac_Nam=Vac_Nam_v{vv};
-    if(strcmp(Vac_Nam,'IPV'))
-        load(['Impact_Trust_Medicine_Science_on_Uptake_Polio_2021.mat'],'vac_d');
-    else
-        load(['Impact_Trust_Medicine_Science_on_Uptake_' Vac_Nam '_2021.mat'],'vac_d');
-    end
-    vac_d=real(vac_d);
+    [Vac_Uptake] = County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID);
+    Vac_Uptake(isnan(Vac_Uptake))=Approximated_County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID(isnan(Vac_Uptake)));
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
     % Trust in medicine
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
@@ -109,7 +103,7 @@ for vv=1:4
             text(ymin,mm-1,[num2str(100.*c_bound_uptake(mm,1),'%3.0f') '%'],'HorizontalAlignment','center','Fontsize',16);
         end
         text(ymin,length(c_indx_uptake),[num2str(100,'%3.0f') '%'],'HorizontalAlignment','center','Fontsize',16);
-        text(ymin+2.5,max(c_indx_uptake)./2,{[Vac_Nam ' uptake']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+        text(ymin+2.5,max(c_indx_uptake)./2,{[Vac_Title_v{vv} ' uptake']},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
         axis off;    
         text(-40,1,char(64+vv),'FontSize',32,'Units','normalized');
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,8 +119,8 @@ for vv=1:4
         CC_county_uptake=ones(length(County_ID),3);
         
         for ii=1:length(County_ID)
-            if(~isnan(vac_d(ii)))
-                CC_county_uptake(ii,:)=C_uptake(c_indx_uptake(vac_d(ii)>=c_bound_uptake(:,1) & vac_d(ii)<c_bound_uptake(:,2)),:);
+            if(~isnan(Vac_Uptake(ii)))
+                CC_county_uptake(ii,:)=C_uptake(c_indx_uptake(Vac_Uptake(ii)>=c_bound_uptake(:,1) & Vac_Uptake(ii)<c_bound_uptake(:,2)),:);
             else
                 CC_county_uptake(ii,:)=[0.7 0.7 0.7];
             end

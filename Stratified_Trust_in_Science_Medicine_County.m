@@ -1,8 +1,8 @@
 function [County_Trust_in_Science,County_Trust_in_Medicine,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Var_1,County_ID)
     
-    load([pwd '\State_Data\Trust_in_Science_Stratification.mat']);
-    load([pwd '\State_Data\Trust_in_Medicine_Stratification.mat']);
-    load([pwd '\State_Data\Demographic_Data\County_Population.mat']);
+    load([pwd '\Spatial_Data\Trust_Science_Medicine\Trust_in_Science_Stratification.mat']);
+    load([pwd '\Spatial_Data\Trust_Science_Medicine\Trust_in_Medicine_Stratification.mat']);
+    load([pwd '\Spatial_Data\Demographic_Data\County_Population.mat']);
     Data_CID=County_Demo.County_ID;
     Data_Year=County_Demo.Year_Data;
     eval(['P=County_Demo.' Var_1 ';']);

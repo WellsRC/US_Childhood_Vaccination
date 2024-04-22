@@ -5,27 +5,8 @@ clc;
 % Load the state id to be analyzed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
-S=shaperead([pwd '\State_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 
-State_FIPc={S.STATEFP};
-State_FIP=zeros(size(State_FIPc));
-
-for ii=1:length(State_FIP)
-  State_FIP(ii)=str2double(State_FIPc{ii});  
-end
-
-% Remove specific states not in the contiguous US (i.e.; exclude alaska and
-% hawaii
-S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
-
-State_ID_temp={S.STATEFP};
-State_ID=zeros(size(State_ID_temp));
-
-for ii=1:length(State_ID)
-  State_ID(ii)=str2double(State_ID_temp{ii});  
-end
-State_ID=unique(State_ID);
-clearvars -except State_ID 
+[State_ID,~,~]=Read_ID_Number();
 
 
 % Years to conduct the analysis
@@ -45,6 +26,8 @@ for yy=1:length(Yr)-1
     Year_Raw{yy}=[num2str(Yr(yy+1)) ' - ' num2str(Yr(yy))];
 end
 
+
+Per_Negative_2023=NaN.*zeros(length(State_ID),length(Var_Namev));
 
 % Cycle through the vaccines in which we are condcuting the analysis
 for dd=1:length(Var_Namev)
@@ -118,8 +101,10 @@ for dd=1:length(Var_Namev)
         end
     end
     
+    
     for yy=1:length(Yr)
         vt=State_Poly_Slope(:,yy);
+        t_nan=~isnan(vt);
         vt=vt(~isnan(vt));
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
@@ -137,13 +122,21 @@ for dd=1:length(Var_Namev)
                 Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%4.3f') '% (p=' num2str(pv,'%4.3f') ')'];
             end
         end
+        if(yy==length(Yr))
+            t_neg=double(vt<0);
+            Per_Negative_2023(t_nan,dd)=t_neg;
+            
+        end
     end
-
+    
+%     save(['Polynomial_Slope_State_' Var_Name '.mat'],'State_Poly_Slope');
      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Conduct analysis on the state-level vaccine annual slope
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     Raw_Slope=diff(V,[],2);
+
+%     save(['Raw_Slope_State_' Var_Name '.mat'],'Raw_Slope');
 
     for yy=1:length(Yr)-1
         vt=Raw_Slope(:,yy);
