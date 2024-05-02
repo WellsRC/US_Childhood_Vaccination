@@ -54,7 +54,7 @@ Distance_Optimal_Total=sqrt(sum(([x y]-repmat(X_opt,height(T),1)).^2,2));
 
 %% Compute the pdf wieghts
 d=sqrt(4.*0.01./pi);
-lambda_d=fmincon(@(z)10.^6.*(integral(@(x)exp(-z.*x.^2),0,d)/integral(@(x)exp(-z.*x.^2),0,sqrt(2))-0.99).^2,295,[],[],[],[],10,1000);
+lambda_d=fmincon(@(z)10.^6.*(integral(@(x)exp(-z.*x.^2),0,d)/integral(@(x)exp(-z.*x.^2),0,sqrt(2))-0.99).^2,260,[],[],[],[],10,1000);
 pdf_dist=@(dist) exp(-lambda_d.*dist.^2)/integral(@(x)exp(-lambda_d.*x.^2),0,sqrt(2));
 
 Weight_MMR=pdf_dist(Distance_Optimal_MMR)./sum(pdf_dist(Distance_Optimal_MMR));
@@ -72,6 +72,7 @@ writetable(T_sorted,'Supplement_Table_Model_Comparison.xlsx','Sheet','Table_All_
 
 X=T(:,1:8);
 X.Trust_Medicine_or_Science=min(X.TrustInMedicine+X.TrustInScience,1);
+X=[X(:,1:7) X(:,9) X(:,8)];
 VN=X.Properties.VariableNames;
 X=table2array(X);
 Vaccine={'MMR';'DTaP';'IPV';'VAR';'All'};
@@ -82,10 +83,25 @@ for jj=1:length(Vaccine)
     W(jj,:)=weight_model(jj,:)*X;
 end
 
+WT=cell(size(W));
+for ii=1:size(W,1)
+    for jj=1:size(W,2)
+        if(W(ii,jj)>=0.001)
+            WT{ii,jj}=num2str(W(ii,jj),'%4.3f');
+        else
+            WT{ii,jj}={'<0.001'};
+        end
+    end
+end
+
 T_W=[table(Vaccine) array2table(W)];
 T_W.Properties.VariableNames(2:end)=VN;
-
+Variable=table(VN');
+Variable.Properties.VariableNames={'Variable'};
+Table_3=[Variable cell2table(WT')];
+Table_3.Properties.VariableNames={'Variable',Vaccine{:}};
 writetable(T_W,'Supplement_Table_Model_Comparison.xlsx','Sheet','Weights');
+writetable(Table_3,'Tables_Main_Text.xlsx','Sheet','Table_3');
 
 
 C=readtable('County_Level_Cross_Validation_Parental_Trust.xlsx','Sheet',['Coefficients_MMR' ]);

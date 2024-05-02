@@ -26,11 +26,16 @@ for yy=1:length(Yr)-1
     Year_Raw{yy}=[num2str(Yr(yy+1)) ' - ' num2str(Yr(yy))];
 end
 
+Table_1=cell(3.*length(Var_Namev),length(Yr)+1);
 
 Per_Negative_2023=NaN.*zeros(length(State_ID),length(Var_Namev));
 
 % Cycle through the vaccines in which we are condcuting the analysis
 for dd=1:length(Var_Namev)
+    
+    Table_1{dd,1}=Var_Namev{dd};
+    Table_1{dd+length(Var_Namev),1}=Var_Namev{dd};
+    Table_1{dd+2.*length(Var_Namev),1}=Var_Namev{dd};
 
     % Create cell arrays to store results of analysis 
     V_Table=cell(length(Yr),length(Yr));
@@ -49,8 +54,10 @@ for dd=1:length(Var_Namev)
         pv=signrank(V(:,yy),0.95,'tail','left');
         if(pv<0.001)
             V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
+            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
         else
             V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
         end
     end
     
@@ -58,7 +65,7 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)
             v_temp=V(:,jj)-V(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(V(:,yy),V(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
@@ -108,18 +115,20 @@ for dd=1:length(Var_Namev)
         vt=vt(~isnan(vt));
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%4.3f')  '% (p<0.001)'];
+            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
+            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
         else
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%4.3f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
         end
         for jj=(yy+1):length(Yr)
             v_temp=State_Poly_Slope(:,jj)-State_Poly_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(State_Poly_Slope(:,yy),State_Poly_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%4.3f') '% (p<0.001)'];
+                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%4.3f') '% (p=' num2str(pv,'%4.3f') ')'];
+                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p=' num2str(pv,'%4.3f') ')'];
             end
         end
         if(yy==length(Yr))
@@ -144,13 +153,15 @@ for dd=1:length(Var_Namev)
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
             Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
+            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
         else
             Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
         end
         for jj=(yy+1):length(Yr)-1
             v_temp=Raw_Slope(:,jj)-Raw_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(Raw_Slope(:,yy),Raw_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
@@ -174,3 +185,7 @@ for dd=1:length(Var_Namev)
 
     writetable(Data_Slope,'Comparison_Change_Vaccine_Uptake_Data.xlsx','Sheet',Var_Name);
 end
+
+Table_1=cell2table(Table_1);
+Table_1.Properties.VariableNames={'Vaccine' Year{:}};
+writetable(Table_1,'Tables_Main_Text.xlsx','Sheet','Table_1');

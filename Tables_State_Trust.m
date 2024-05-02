@@ -24,7 +24,9 @@ for yy=1:length(Yr)-1
     Year_Raw{yy}=[num2str(Yr(yy+1)) ' - ' num2str(Yr(yy))];
 end
 
-Var_Namev={'Parental_Trust_in_Science','Parental_Trust_in_Medicine'};
+Var_Namev={'Parental_Trust_in_Medicine','Parental_Trust_in_Science'};
+
+Table_2=cell(3.*length(Var_Namev),length(Yr)+1);
 
 for dd=1:length(Var_Namev)
     if(strcmp(Var_Namev{dd},'Parental_Trust_in_Science'))
@@ -32,6 +34,11 @@ for dd=1:length(Var_Namev)
     else
         Nat_Trust=Nat_Medicine;
     end
+    
+
+    Table_2{dd,1}=Var_Namev{dd};
+    Table_2{dd+length(Var_Namev),1}=Var_Namev{dd};
+    Table_2{dd+2.*length(Var_Namev),1}=Var_Namev{dd};
 
     % Create cell arrays to store results of analysis 
     V_Table=cell(length(Yr),length(Yr));
@@ -49,8 +56,10 @@ for dd=1:length(Var_Namev)
         pv=signrank(Trust(:,yy),Nat_Trust(yy),'tail','left');
         if(pv<0.001)
             V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
+            Table_2{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
         else
             V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_2{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
         end
     end
     
@@ -58,7 +67,7 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)
             v_temp=Trust(:,jj)-Trust(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(Trust(:,yy),Trust(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
@@ -107,13 +116,15 @@ for dd=1:length(Var_Namev)
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
             Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%4.3f')  '% (p<0.001)'];
+            Table_2{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
         else
             Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%4.3f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_2{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
         end
         for jj=(yy+1):length(Yr)
             v_temp=State_Poly_Slope(:,jj)-State_Poly_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(State_Poly_Slope(:,yy),State_Poly_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%4.3f') '% (p<0.001)'];
             else
@@ -134,13 +145,15 @@ for dd=1:length(Var_Namev)
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
             Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
+            Table_2{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
         else
             Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Table_2{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
         end
         for jj=(yy+1):length(Yr)-1
             v_temp=Raw_Slope(:,jj)-Raw_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(Raw_Slope(:,yy),Raw_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
@@ -165,6 +178,9 @@ for dd=1:length(Var_Namev)
     writetable(Data_Slope,'Comparison_Change_Parental_Trust_Data.xlsx','Sheet',Var_Name);
 end
 
+Table_2=cell2table(Table_2);
+Table_2.Properties.VariableNames={'Vaccine' Year{:}};
+writetable(Table_2,'Tables_Main_Text.xlsx','Sheet','Table_2');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Overall Trust
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -227,7 +243,7 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)
             v_temp=Trust(:,jj)-Trust(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(Trust(:,yy),Trust(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else
@@ -282,7 +298,7 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)
             v_temp=State_Poly_Slope(:,jj)-State_Poly_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(State_Poly_Slope(:,yy),State_Poly_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%4.3f') '% (p<0.001)'];
             else
@@ -309,7 +325,7 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)-1
             v_temp=Raw_Slope(:,jj)-Raw_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
-            pv=ranksum(Raw_Slope(:,yy),Raw_Slope(:,jj),'tail','right');
+            pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
                 Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
             else

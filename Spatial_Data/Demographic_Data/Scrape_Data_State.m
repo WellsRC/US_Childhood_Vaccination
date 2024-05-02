@@ -1203,6 +1203,10 @@ for ss=1:size(State_Demo.Population.Male.Other.Age_18_34,1)
         State_Demo.Population.Age_50_64(ss,~tf)=State_Demo.Population.Male.Black.Age_50_64(ss,~tf)+State_Demo.Population.Male.White.Age_50_64(ss,~tf)+State_Demo.Population.Male.Other.Age_50_64(ss,~tf)+State_Demo.Population.Female.Black.Age_50_64(ss,~tf)+State_Demo.Population.Female.White.Age_50_64(ss,~tf)+State_Demo.Population.Female.Other.Age_50_64(ss,~tf);
         State_Demo.Population.Age_65_plus(ss,~tf)=State_Demo.Population.Male.Black.Age_65_plus(ss,~tf)+State_Demo.Population.Male.White.Age_65_plus(ss,~tf)+State_Demo.Population.Male.Other.Age_65_plus(ss,~tf)+State_Demo.Population.Female.Black.Age_65_plus(ss,~tf)+State_Demo.Population.Female.White.Age_65_plus(ss,~tf)+State_Demo.Population.Female.Other.Age_65_plus(ss,~tf);
     end
+    if(isnan(sum(State_Demo.Population.Age_under_5(ss,:))))       
+        tf=~isnan(State_Demo.Population.Age_under_5(ss,:));
+        State_Demo.Population.Age_under_5(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Population.Age_under_5(ss,tf)),State_Demo.Year_Data(~tf)),0);
+    end
     if(isnan(sum(State_Demo.Education.Less_than_High_School(ss,:))))     
         tf=~isnan(State_Demo.Education.Less_than_High_School(ss,:));
         State_Demo.Education.Less_than_High_School(ss,~tf)=max(pchip(State_Demo.Year_Data(tf),(State_Demo.Education.Less_than_High_School(ss,tf)),State_Demo.Year_Data(~tf)),0);
@@ -1257,6 +1261,7 @@ for ss=1:size(State_Demo.Population.Male.Other.Age_18_34,1)
     end
 
 end
+State_Demo.Population.Total=State_Demo.Population.Male.Total+State_Demo.Population.Female.Total;
 save(['State_Population.mat'],'State_Demo');
 
 

@@ -24,6 +24,9 @@ Data_Yr_County=zeros(length(Yr).*length(County_ID),1);
 Under_Age_5=Under_Age_5(:,ismember(Data_Year,Yr));
 
 County_Weight=cell(length(Yr),1);
+
+Trust_Science_County_Overall=zeros(length(Yr).*length(County_ID),1);
+Trust_Medicine_County_Overall=zeros(length(Yr).*length(County_ID),1);
 for yy=1:length(Yr)
     
     County_Weight_t=zeros(length(State_ID),length(County_ID));
@@ -35,8 +38,11 @@ for yy=1:length(Yr)
     Data_Yr_State((yy-1).*length(State_ID)+[1:length(State_ID)],1)=Yr(yy);
     Data_Yr_County((yy-1).*length(County_ID)+[1:length(County_ID)],1)=Yr(yy);
 
+    Trust_Science_County_Overall((yy-1).*length(County_ID)+[1:length(County_ID)],1)=Return_County_Data('Trust_in_Science',Yr(yy),County_ID);
+    Trust_Medicine_County_Overall((yy-1).*length(County_ID)+[1:length(County_ID)],1)=Return_County_Data('Trust_in_Medicine',Yr(yy),County_ID);
+
     for jj=1:length(Var_N)
-        if(strcmp(Var_N{jj},'Parental_Trust_in_Medicine') || strcmp(Var_N{jj},'Parental_Trust_in_Science')||strcmp(Var_N{jj},'Trust_in_Medicine') || strcmp(Var_N{jj},'Trust_in_Science'))
+        if(strcmp(Var_N{jj},'Parental_Trust_in_Medicine') || strcmp(Var_N{jj},'Parental_Trust_in_Science'))
             xt=Return_State_Data(Var_N{jj},Yr(yy),State_ID);
             xt(xt==1)=1-10^(-8);
             xt(xt==0)=10^(-8);
@@ -100,7 +106,7 @@ for dd=1:length(Inqv)
         [RE_County((yy-1).*length(County_ID)+[1:length(County_ID)]),PE_County((yy-1).*length(County_ID)+[1:length(County_ID)])] = Exemption_Timeline(Yr(yy),County_State_ID,Inqv{dd});
     end
 
-    save(['State_County_Data_Cross_Validation_Model_Data_' Inqv{dd} '.mat'],'X_State',"X_County",'RE_State','PE_State','RE_County','PE_County','Data_Yr_State','Data_Yr_County','Var_N');
+    save(['State_County_Data_Cross_Validation_Model_Data_' Inqv{dd} '.mat'],'X_State',"X_County",'RE_State','PE_State','RE_County','PE_County','Data_Yr_State','Data_Yr_County','Var_N','Trust_Science_County_Overall','Trust_Medicine_County_Overall');
     
     RE_State=RE_State(~isnan(Y_State) & ~isinf(Y_State)); 
     PE_State=PE_State(~isnan(Y_State) & ~isinf(Y_State));
