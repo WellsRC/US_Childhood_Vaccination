@@ -17,9 +17,14 @@ S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
 Vac_Nam_v={'MMR','DTaP','Polio','VAR'};
 Vac_Title_v={'MMR','DTaP','IPV','VAR'};
 Vac_Uptake_v=zeros(length(County_ID),length(Vac_Nam_v));
+NSamp=10^4;
+Vac_Uptake_All_v=zeros(length(Vac_Nam_v),length(County_ID),NSamp);
 for vv=1:4
     [Vac_Uptake] = County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID);
-    Vac_Uptake(isnan(Vac_Uptake))=Approximated_County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID(isnan(Vac_Uptake)));
+    Vac_Uptake_All_v(vv,:,:)=repmat(Vac_Uptake,1,NSamp);
+    tf=isnan(Vac_Uptake);
+    [Vac_Uptake(isnan(Vac_Uptake)),v_temp]=Approximated_County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID(isnan(Vac_Uptake)));
+    Vac_Uptake_All_v(vv,tf,:)=v_temp;
     Vac_Uptake_v(:,vv)=Vac_Uptake;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
     % Trust in medicine
@@ -158,15 +163,26 @@ print(gcf,['Figure3.png'],'-dpng','-r600');
 print(gcf,['Figure3.tiff'],'-dtiff','-r600');
 for vv=1:4
     per_county=mean(Vac_Uptake_v(:,vv)>=0.95);
-    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is 95%% or higher: ' num2str(100.*per_county,'%3.1f') '\n']);
+    per_county_samp=squeeze(Vac_Uptake_All_v(vv,:,:)>=0.95);
+    per_county_samp=mean(per_county_samp,1);
+    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is 95%% or higher: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
     per_county=mean(Vac_Uptake_v(:,vv)<0.90);
-    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is less than 90%%: ' num2str(100.*per_county,'%3.1f') '\n']);
+    per_county_samp=squeeze(Vac_Uptake_All_v(vv,:,:)<0.90);
+    per_county_samp=mean(per_county_samp,1);
+    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is less than 90%%: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
 end
 
+    
+    per_county_samp=squeeze(Vac_Uptake_All_v(1,:,:)>=0.95) & squeeze(Vac_Uptake_All_v(2,:,:)>=0.95) & squeeze(Vac_Uptake_All_v(3,:,:)>=0.95) & squeeze(Vac_Uptake_All_v(4,:,:)>=0.95);
+    per_county_samp=mean(per_county_samp,1);
 
     per_county=mean(Vac_Uptake_v(:,1)>=0.95 & Vac_Uptake_v(:,2)>=0.95 & Vac_Uptake_v(:,3)>=0.95 & Vac_Uptake_v(:,4)>=0.95);
-    fprintf(['Percent of counties coverage 95%% or higher for all: ' num2str(100.*per_county,'%3.1f') '\n']);
+    fprintf(['Percent of counties coverage 95%% or higher for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
+
+    per_county_samp=squeeze(Vac_Uptake_All_v(1,:,:)<0.9) & squeeze(Vac_Uptake_All_v(2,:,:)<0.9) & squeeze(Vac_Uptake_All_v(3,:,:)<0.9) & squeeze(Vac_Uptake_All_v(4,:,:)<0.9);
+    per_county_samp=mean(per_county_samp,1);
+
     per_county=mean(Vac_Uptake_v(:,1)<0.9 & Vac_Uptake_v(:,2)<0.9 & Vac_Uptake_v(:,3)<0.9 & Vac_Uptake_v(:,4)<0.9);
-    fprintf(['Percent of counties coverage less than 90%% for all: ' num2str(100.*per_county,'%3.1f') '\n']);
+    fprintf(['Percent of counties coverage less than 90%% for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
 
 end
