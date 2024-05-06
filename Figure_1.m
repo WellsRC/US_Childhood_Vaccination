@@ -1,3 +1,4 @@
+
 clear;
 clc;
 close all;
@@ -6,7 +7,7 @@ close all;
 [State_ID,~,~]=Read_ID_Number();
 
 Yr=[2017:2022];
-Inqv={'MMR','DTaP','Polio','VAR','Trust_in_Science','Trust_in_Medicine'};
+Inqv={'MMR','DTaP','Polio','VAR','Parental_Trust_in_Science','Parental_Trust_in_Medicine'};
 Title_Name={'MMR','DTaP','IPV','VAR','Trust in Science','Trust in Medicine'};
 xtl={['2017' char(8212) '18'],['2018' char(8212) '19'],['2019' char(8212) '20'],['2020' char(8212) '21'],['2021' char(8212) '22'],['2022' char(8212) '23']};
 
@@ -15,7 +16,7 @@ for dd=1:length(Inqv)
 
 
     Y=zeros(length(State_ID),length(Yr));
-    if(~strcmp(Inqv{dd},'Trust_in_Science') && ~strcmp(Inqv{dd},'Trust_in_Medicine'))
+    if(~strcmp(Inqv{dd},'Parental_Trust_in_Science') && ~strcmp(Inqv{dd},'Parental_Trust_in_Medicine'))
         for yy=1:length(Yr)
             Y(:,yy)=State_Immunization_Statistics(Inqv{dd},Yr(yy),State_ID);    
         end
@@ -45,12 +46,12 @@ for dd=1:length(Inqv)
         set(gca,'LineWidth',2,'tickdir','out','Fontsize',14,'XTick',Yr,'XTicklabel',[]);
     end
 
-    if(~strcmp(Inqv{dd},'Trust_in_Science') && ~strcmp(Inqv{dd},'Trust_in_Medicine'))
+    if(~strcmp(Inqv{dd},'Parental_Trust_in_Science') && ~strcmp(Inqv{dd},'Parental_Trust_in_Medicine'))
         ylabel('Vaccine uptake','FontSize',18)
         ylim([80 100]);
     else
         ylabel('Level of trust','FontSize',18)
-        ylim([55 75]);
+        ylim([50 80]);
     end    
 
     text(-0.2,1.075,char(64+dd),'Fontsize',24,'Units','normalized');

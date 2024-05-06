@@ -112,19 +112,35 @@ W{2}=Weight_DTaP';
 W{3}=Weight_IPV';
 W{4}=Weight_VAR';
 Z=zeros(4,width(C));
+Z_lb=zeros(4,width(C));
+Z_ub=zeros(4,width(C));
 Inqv={'MMR','DTaP','Polio','VAR'};
 for vv=1:4
     C=readtable('County_Level_Cross_Validation_Parental_Trust.xlsx','Sheet',['Coefficients_' Inqv{vv} ]);
+    M=table2array(C);
 
-
-    Z(vv,:)=W{vv}*table2array(C);
-
+    Z(vv,:)=W{vv}*M;
+    w_c=cumsum(W{vv})./sum(W{vv});
+    Indx=zeros(10^4,1);
+    r=rand(10^4,1);
+    for ii=1:length(r)
+        Indx(ii)=find(r(ii)<=w_c, 1 );
+    end
+    Mt=M(Indx,:);
+    Z_lb(vv,:)=prctile(Mt,2.5);
+    Z_ub(vv,:)=prctile(Mt,97.5);
 end
 
+Zt=cell(4,width(C));
+for vv=1:4
+    for jj=1:width(C)
+        Zt{vv,jj}=[num2str(Z(vv,jj),'%4.3f') '(' num2str(Z_lb(vv,jj),'%4.3f') char(8211) num2str(Z_ub(vv,jj),'%4.3f') ')'];
+    end
+end
 temp_VN=C.Properties.VariableNames;
 Vaccine=Vaccine(1:end-1);
 Variables={'Vaccine',temp_VN{:}};
-T_C=[table(Vaccine) array2table(Z)];
+T_C=[table(Vaccine) cell2table(Zt)];
 T_C.Properties.VariableNames=Variables;
 
 writetable(T_C,'Supplement_Table_Model_Comparison.xlsx','Sheet','Weighted_Coefficients');

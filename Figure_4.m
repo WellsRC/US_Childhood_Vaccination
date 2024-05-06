@@ -158,7 +158,7 @@ for vv=1:4
     plot(dT,m,'color',hex2rgb('#063852'),'LineWidth',2)
     
 
-    fprintf(['Magnitude of increase in vaccine uptake for trust in medicine for ' Inqv_t{vv} ':' num2str(m(end),'%3.2f') '%% \n'])
+    fprintf(['Magnitude of increase in vaccine uptake for trust in medicine for ' Inqv_t{vv} ':' num2str(m(end),'%3.2f') '%% (' num2str(Z_lb2(vv,1,end),'%3.2f') '-' num2str(Z_ub2(vv,1,end),'%3.2f') ')\n'])
 
     lb=squeeze(Z_lb1(vv,2,:))';
     ub=squeeze(Z_ub1(vv,2,:))';
@@ -168,7 +168,7 @@ for vv=1:4
     patch([dT flip(dT)],[lb flip(ub)],hex2rgb('#F0810F'),'FaceAlpha',0.2,'LineStyle','none'); hold on
     m=squeeze(Z_mean(vv,2,:));
     plot(dT,m,'color',hex2rgb('#F0810F'),'LineWidth',2)
-    fprintf(['Magnitude of increase in vaccine uptake for trust in science for ' Inqv_t{vv} ':' num2str(m(end),'%3.2f') '%% \n'])
+    fprintf(['Magnitude of increase in vaccine uptake for trust in science for ' Inqv_t{vv} ':' num2str(m(end),'%3.2f') '%% (' num2str(Z_lb2(vv,2,end),'%3.2f') '-' num2str(Z_ub2(vv,2,end),'%3.2f') ')\n'])
     fprintf(['Probability of decrease in vaccine uptake for trust in science for ' Inqv_t{vv} ':' num2str(per_decrease(vv,2,end)) '\n'])
     plot(dT,zeros(size(dT)),'k-.','LineWidth',1.5)
 
