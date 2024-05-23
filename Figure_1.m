@@ -1,64 +1,61 @@
-
 clear;
 clc;
 close all;
 
+T=readtable('Bayesian_Network.xlsx','Sheet','Summary');
+Sheet_AIC=T.Sheet(T.delta_AIC==0);
 
-[State_ID,~,~]=Read_ID_Number();
+T=readtable('Bayesian_Network.xlsx','Sheet',Sheet_AIC{:},'Range','B7:M20');
 
-Yr=[2017:2022];
-Inqv={'MMR','DTaP','Polio','VAR','Parental_Trust_in_Science','Parental_Trust_in_Medicine'};
-Title_Name={'MMR','DTaP','IPV','VAR','Trust in Science','Trust in Medicine'};
-xtl={['2017' char(8212) '18'],['2018' char(8212) '19'],['2019' char(8212) '20'],['2020' char(8212) '21'],['2021' char(8212) '22'],['2022' char(8212) '23']};
+A=table2array(T(3:end,2:end));
+N=T.Variable(3:end);
 
-figure('units','normalized','outerposition',[0.1 0.05 0.7 1]);
-for dd=1:length(Inqv)
+G=digraph(A,N);
 
+xx=[-100 -1;
+    -1 -0.75;
+    -0.75 -0.5;
+    -0.5 -0.25;
+    -0.25 -0.01;
+    -0.01  0;
+    0 0.01
+    0.01 0.25
+    0.25 0.5
+    0.5 0.75
+    0.75 1
+    1 100];
 
-    Y=zeros(length(State_ID),length(Yr));
-    if(~strcmp(Inqv{dd},'Parental_Trust_in_Science') && ~strcmp(Inqv{dd},'Parental_Trust_in_Medicine'))
-        for yy=1:length(Yr)
-            Y(:,yy)=State_Immunization_Statistics(Inqv{dd},Yr(yy),State_ID);    
-        end
+Cx=[hex2rgb('#67000d');
+hex2rgb('#a50f15');
+hex2rgb('#cb181d');
+hex2rgb('#ef3b2c');
+hex2rgb('#fb6a4a');
+hex2rgb('#fc9272');
+
+hex2rgb('#9ecae1');
+hex2rgb('#6baed6');
+hex2rgb('#4292c6');
+hex2rgb('#2171b5');
+hex2rgb('#08519c');
+hex2rgb('#08306b')];
+
+CE=zeros(length(G.Edges.Weight),3);
+
+temp=cell(length(G.Edges.Weight),1);
+for ii=1:length(G.Edges.Weight)
+    tf=G.Edges.Weight(ii)>xx(:,1) & G.Edges.Weight(ii)<=xx(:,2);
+    CE(ii,:)=Cx(tf,:);
+    if(abs(G.Edges.Weight(ii))<0.01)
+        temp{ii}='<0.01';
     else
-        for yy=1:length(Yr)
-            Y(:,yy)=Return_State_Data(Inqv{dd},Yr(yy),State_ID);    
-        end
+        temp{ii}=num2str(abs(round(G.Edges.Weight(ii),2)));
     end
-        
-    subplot('Position',[0.085+0.5.*rem(dd-1,2),0.72-0.295.*floor((dd-1)./2),0.4,0.245]);
-    
-    for ii=1:length(Yr)
-        patch(Yr(ii)+[-0.4 -0.4 0.4 0.4],100.*prctile(Y(:,ii),[2.5 97.5 97.5 2.5]),'k','FaceAlpha',0.2,'LineStyle','none'); hold on
-        patch(Yr(ii)+[-0.4 -0.4 0.4 0.4],100.*prctile(Y(:,ii),[25 75 75 25]),'k','FaceAlpha',0.3,'LineStyle','none'); hold on
-        plot(Yr(ii)+[-0.4 0.4],100.*prctile(Y(:,ii),[50 50]),'k','LineWidth',2);
-    end
-    xlim([Yr(1)-0.5 Yr(end)+0.5])
-    grid on;
-    title(Title_Name{dd})
-    ytickformat('percentage');
-    box off;
-    if(dd>=5)
-        set(gca,'LineWidth',2,'tickdir','out','Fontsize',14,'XTick',Yr,'XTicklabel',xtl);
-        xtickangle(90);
-        xlabel('School year','FontSize',18)
-    else
-        set(gca,'LineWidth',2,'tickdir','out','Fontsize',14,'XTick',Yr,'XTicklabel',[]);
-    end
-
-    if(~strcmp(Inqv{dd},'Parental_Trust_in_Science') && ~strcmp(Inqv{dd},'Parental_Trust_in_Medicine'))
-        ylabel('Vaccine uptake','FontSize',18)
-        ylim([80 100]);
-    else
-        ylabel('Level of trust','FontSize',18)
-        ylim([50 80]);
-    end    
-
-    text(-0.2,1.075,char(64+dd),'Fontsize',24,'Units','normalized');
 end
 
+figure('units','normalized','outerposition',[0 0 1 1]);
 
-print(gcf,['Figure1.png'],'-dpng','-r600');
-print(gcf,['Figure1.tiff'],'-dtiff','-r600');
+plot(G,'EdgeColor',CE,'LineWidth',2,'Marker','s','Markersize',10,'NodeFontSize',18,'ArrowSize',12,'NodeColor','k','EdgeLabel',temp,'EdgeFontsize',18,'EdgeLabelColor',CE,'Layout','layered','Sinks',[4 5],'Sources',[7 8])
+axis off
+box off
 
-
+print(gcf,['Bayesian_Network_Trust.png'],'-dpng','-r600');
