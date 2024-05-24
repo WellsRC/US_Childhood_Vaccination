@@ -51,13 +51,14 @@ for dd=1:length(Var_Namev)
         V(:,yy)=State_Immunization_Statistics(Var_Name,Yr(yy),State_ID); 
         vt=V(:,yy);
         vt=vt(~isnan(V(:,yy)));
+        n=length(vt);
         pv=signrank(V(:,yy),0.95,'tail','left');
         if(pv<0.001)
-            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
-            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p<0.001)'];
+            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% p < 0.001 (n = ' num2str(n) ')'];
+            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% p < 0.001 (n = ' num2str(n) ')'];
         else
-            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
-            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% (p=' num2str(pv,'%4.3f') ')'];
+            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
+            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
         end
     end
     
@@ -65,11 +66,13 @@ for dd=1:length(Var_Namev)
         for jj=(yy+1):length(Yr)
             v_temp=V(:,jj)-V(:,yy);
             v_temp=v_temp(~isnan(v_temp));
+
+            n=length(v_temp);
             pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
-                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
+                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
             else
-                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p=' num2str(pv,'%4.3f') ')'];
+                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
             end
         end
     end
@@ -113,22 +116,24 @@ for dd=1:length(Var_Namev)
         vt=State_Poly_Slope(:,yy);
         t_nan=~isnan(vt);
         vt=vt(~isnan(vt));
+        n=length(vt);
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
-            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
+            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
+            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
         else
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
-            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
+            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
         end
         for jj=(yy+1):length(Yr)
             v_temp=State_Poly_Slope(:,jj)-State_Poly_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
+            n=length(v_temp);
             pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
+                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
             else
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p=' num2str(pv,'%4.3f') ')'];
+                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
             end
         end
         if(yy==length(Yr))
@@ -150,22 +155,24 @@ for dd=1:length(Var_Namev)
     for yy=1:length(Yr)-1
         vt=Raw_Slope(:,yy);
         vt=vt(~isnan(vt));
+        n=length(vt);
         pv=signrank(vt,0,'tail','left');
         if(pv<0.001)
-            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
-            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p<0.001)'];
+            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
+            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
         else
-            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
-            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% (p=' num2str(pv,'%4.3f') ')'];
+            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
+            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p=' num2str(pv,'%4.3f') ' (n=' num2str(n) ')'];
         end
         for jj=(yy+1):length(Yr)-1
             v_temp=Raw_Slope(:,jj)-Raw_Slope(:,yy);
             v_temp=v_temp(~isnan(v_temp));
+            n=length(v_temp);
             pv=signrank(v_temp,0,'tail','left');
             if(pv<0.001)
-                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p<0.001)'];
+                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
             else
-                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% (p=' num2str(pv,'%4.3f') ')'];
+                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
             end
         end
     end

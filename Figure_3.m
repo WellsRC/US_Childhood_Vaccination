@@ -188,8 +188,8 @@ for vv=1:4
 end
 
 
-print(gcf,['Figure4.png'],'-dpng','-r600');
-print(gcf,['Figure4.tiff'],'-dtiff','-r600');
+print(gcf,['Figure3.png'],'-dpng','-r600');
+print(gcf,['Figure3.tiff'],'-dtiff','-r600');
 
 
 
