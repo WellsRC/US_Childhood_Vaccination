@@ -1,6 +1,4 @@
 
-*.xlsx
-*.csv
 *.png
 State_Data/County_Data/cb_2018_us_county_500k.cpg
 State_Data/County_Data/cb_2018_us_county_500k.dbf
@@ -10,7 +8,7 @@ State_Data/County_Data/cb_2018_us_county_500k.shp.ea.iso.xml
 State_Data/County_Data/cb_2018_us_county_500k.shp.iso.xml
 State_Data/County_Data/cb_2018_us_county_500k.shx
 State_Data/Adverse_Events_Measles.mat
-*.xls
 *.pdf
 *.mat
 Flow_Charts.pptx
+/Spatial_Data/PDF_Data
