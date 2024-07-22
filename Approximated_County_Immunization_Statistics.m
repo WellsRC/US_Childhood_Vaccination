@@ -1,4 +1,4 @@
-function [V,V_All]=Approximated_County_Immunization_Statistics(Vac,Yr,Inq_County_ID)
+function [V,V_All]=Approximated_County_Immunization_Statistics(Vac,Yr,Inq_County_ID,N_Samp)
 
     [~,County_ID,~]=Read_ID_Number();
     V=zeros(length(County_ID),length(Yr));
@@ -10,8 +10,6 @@ function [V,V_All]=Approximated_County_Immunization_Statistics(Vac,Yr,Inq_County
     [W,Inqv]=Return_Model_Weights();
     w_c=cumsum(W{strcmp(Vac,Inqv)});
     
-    N_Samp=10^4;
-
     V_All=zeros(length(Yr),length(County_ID),N_Samp);
 
     r=rand(N_Samp,1);

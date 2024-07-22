@@ -1,6 +1,6 @@
 function [county_weight]=Return_Population_Weight_County()
 
-load([pwd '\Spatial_Data\Demographic_Data\County_Population.mat']);
+load([pwd '/Spatial_Data/Demographic_Data/County_Population.mat']);
 
 county_weight.County_ID=County_Demo.County_ID;
 county_weight.State_ID=County_Demo.State_ID;

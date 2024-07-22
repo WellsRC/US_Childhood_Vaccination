@@ -1,6 +1,6 @@
 function [County_R,Data_Year]=Demographics_County(Var_1,County_ID)
 
-    load([pwd '\Spatial_Data\Demographic_Data\County_Population.mat']);
+    load([pwd '/Spatial_Data/Demographic_Data/County_Population.mat']);
     Data_SID=County_Demo.County_ID;
     Data_Year=County_Demo.Year_Data;
     

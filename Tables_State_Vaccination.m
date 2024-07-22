@@ -26,173 +26,216 @@ for yy=1:length(Yr)-1
     Year_Raw{yy}=[num2str(Yr(yy+1)) ' - ' num2str(Yr(yy))];
 end
 
-Table_1=cell(3.*length(Var_Namev),length(Yr)+1);
+Table_1=cell(5.*length(Var_Namev),length(Yr)+2);
 
-Per_Negative_2023=NaN.*zeros(length(State_ID),length(Var_Namev));
-
+Measure={'Vaccine uptake','Proportion of states below 95%','Extent of uptake below 95%','Proportion of states uptake declined','Extent of decline in uptake'};
 % Cycle through the vaccines in which we are condcuting the analysis
 for dd=1:length(Var_Namev)
     
-    Table_1{dd,1}=Var_Namev{dd};
-    Table_1{dd+length(Var_Namev),1}=Var_Namev{dd};
-    Table_1{dd+2.*length(Var_Namev),1}=Var_Namev{dd};
+    Table_1{dd,2}=Var_Namev{dd};
+    Table_1{dd+length(Var_Namev),2}=Var_Namev{dd};
+    Table_1{dd+2.*length(Var_Namev),2}=Var_Namev{dd};
+    Table_1{dd+3.*length(Var_Namev),2}=Var_Namev{dd};
+    Table_1{dd+4.*length(Var_Namev),2}=Var_Namev{dd};
+
+    for ss=1:5
+        Table_1{dd+(ss-1).*length(Var_Namev),1}=Measure{ss};
+    end
 
     % Create cell arrays to store results of analysis 
-    V_Table=cell(length(Yr),length(Yr));
-    Slope_Table=cell(length(Yr),length(Yr));
-    Raw_Slope_Table=cell(length(Yr)-1,length(Yr)-1);
     Var_Name=Var_Namev{dd}; % Read the specified vaccine of interest
-
-    % Array for the vaccine uptake 
-    V=zeros(length(State_ID),length(Yr));
     
     % Read the vaccie data for the speciifed years and states
     for yy=1:length(Yr)
-        V(:,yy)=State_Immunization_Statistics(Var_Name,Yr(yy),State_ID); 
-        vt=V(:,yy);
-        vt=vt(~isnan(V(:,yy)));
-        n=length(vt);
-        pv=signrank(V(:,yy),0.95,'tail','left');
-        if(pv<0.001)
-            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% p < 0.001 (n = ' num2str(n) ')'];
-            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% p < 0.001 (n = ' num2str(n) ')'];
-        else
-            V_Table{yy,yy}=[ num2str(median(100.*vt),'%3.1f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-            Table_1{dd,1+yy}=[ num2str(median(100.*vt),'%3.1f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-        end
-    end
-    
-    for yy=1:(length(Yr)-1)
-        for jj=(yy+1):length(Yr)
-            v_temp=V(:,jj)-V(:,yy);
-            v_temp=v_temp(~isnan(v_temp));
+        VC=State_Immunization_Statistics(Var_Name,Yr(yy),State_ID); 
+        t_n=~isnan(VC);
+        n=sum(t_n);
+        Table_1{dd,2+yy}=[ num2str(100.*mean(VC(t_n)),'%3.1f') '% (' num2str(100.*min(VC(t_n)),'%3.1f') '%' char(8211) num2str(100.*max(VC(t_n)),'%3.1') '%) (n = ' num2str(n) ')'];
 
-            n=length(v_temp);
-            pv=signrank(v_temp,0,'tail','left');
-            if(pv<0.001)
-                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
+        [Num_Sampled,Per_Surveyed] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
+
+        a_beta=VC.*Num_Sampled;
+        b_beta=(1-VC).*Num_Sampled;
+
+        
+        t_n=~isnan(a_beta+b_beta);
+        a_beta_trim=a_beta(t_n);
+        b_beta_trim=b_beta(t_n);
+        Per_Surveyed_trim=Per_Surveyed(t_n);
+        VC_trim=VC(t_n);
+        n=sum(t_n);
+        effect_size_95=zeros(n,10^6);
+        for ss=1:n
+            if(Per_Surveyed_trim(ss)<1)
+                effect_size_95(ss,:)=0.95-betarnd(a_beta_trim(ss),b_beta_trim(ss),1,10^6);
             else
-                V_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
+                effect_size_95(ss,:)=0.95-VC_trim(ss);
             end
         end
-    end
+        p_95=betacdf(0.95,a_beta_trim,b_beta_trim);
+        p_95(Per_Surveyed_trim==1)=double(VC_trim(Per_Surveyed_trim==1)<0.95);
+        samp_95=repmat(p_95,1,10^6)-rand(length(p_95),10^6);
+        samp_95(samp_95>0)=1;
+        samp_95(samp_95<0)=0;
+        
+        mean_samp=mean(samp_95,1);
+        lb_samp=prctile(mean_samp,2.5);
+        ub_samp=prctile(mean_samp,97.5);
+        
+        Table_1{dd+length(Var_Namev),2+yy}=[ num2str(mean(p_95),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
 
-    
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%555
-    % Compute sope based off a polynomial
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%555
+        lb_samp=prctile(100.*effect_size_95(:),2.5);
+        ub_samp=prctile(100.*effect_size_95(:),97.5);
+        mean_samp=mean(100.*effect_size_95(:));
+        Table_1{dd+2.*length(Var_Namev),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
 
-    % An array to specfiy the size of the slopes being computed 
-    State_Poly_Slope=NaN.*zeros(length(State_ID),length(Yr));
-
-    for jj=1:length(State_ID)
-        % Conducting AIC model selection to evalaute which size of
-        % polynomial to select
-        AICs=zeros(sum(~isnan(V(jj,:)))-2,1);
-        % Select the years in which we do not have NaN values 
-        t=Yr(~isnan(V(jj,:)));
-        % pull data that is not NaN to be fit to
-        y=V(jj,~isnan(V(jj,:)));
-
-        % Fi the different polynomials
-        for pp=1:length(AICs)
-           p=polyfit(t,y,pp); % Fit polynomial of size pp
-           rs=polyval(p,t)-y; % Compute the residual
-           std_est=sqrt(mean(rs.^2)); % Estimate the standard deviation based on the residual (This value is how it is computed in fitlm in order to compute the log-likelihood)
-           L=sum(log(normpdf(y,polyval(p,t),std_est))); % compute the log-lilelihood
-           AICs(pp)=aicbic(L,length(p)); % compute the AIC score
-        end
-        if(~isempty(AICs)) % Ensure that AIC is not empty
-            pt=polyfit(t,y,find(AICs==min(AICs))); % Fit the polynmial based on the AIC socore
-            np=[find(AICs==min(AICs)):-1:1]; % Vector used in computing the derivative
-            qt=np.*pt(1:end-1); % Compute the coefficients for the deriviative in order to evalaute the slope for each ear
-            State_Poly_Slope(jj,:)=polyval(qt,Yr); % Compute the slope at each year
-        end
-    end
-    
-    
-    for yy=1:length(Yr)
-        vt=State_Poly_Slope(:,yy);
-        t_nan=~isnan(vt);
-        vt=vt(~isnan(vt));
-        n=length(vt);
-        pv=signrank(vt,0,'tail','left');
-        if(pv<0.001)
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
-            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
+        if(yy==1)
+            Table_1{dd+3.*length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
+            Table_1{dd+4.*length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
+            a_beta_past=a_beta;
+            b_beta_past=b_beta;
+            Per_Surveyed_past=Per_Surveyed;
         else
-            Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-            Table_1{dd+2.*length(Var_Namev),1+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-        end
-        for jj=(yy+1):length(Yr)
-            v_temp=State_Poly_Slope(:,jj)-State_Poly_Slope(:,yy);
-            v_temp=v_temp(~isnan(v_temp));
-            n=length(v_temp);
-            pv=signrank(v_temp,0,'tail','left');
-            if(pv<0.001)
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
-            else
-                Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
+            effect_size_decrease=NaN.*zeros(length(a_beta),10^6);
+            p_decrease=NaN.*zeros(length(a_beta),1);
+            for pp=1:length(p_decrease)
+                if(~isnan(a_beta(pp)+a_beta_past(pp)))
+                    if(Per_Surveyed(pp)<1 && Per_Surveyed_past(pp)<1)
+                        p_decrease(pp)=integral(@(v)betapdf(v,a_beta_past(pp),b_beta_past(pp)).*betacdf(v,a_beta(pp),b_beta(pp)),0,1);
+                    elseif (Per_Surveyed_past(pp)<1)
+                        p_decrease(pp)=1-betacdf(a_beta(pp)./(a_beta(pp)+b_beta(pp)),a_beta_past(pp),b_beta_past(pp));
+                    elseif (Per_Surveyed(pp)<1)
+                        p_decrease(pp)=betacdf(a_beta_past(pp)./(a_beta_past(pp)+b_beta_past(pp)),a_beta(pp),b_beta(pp));
+                    else
+                        p_decrease(pp)=double(a_beta_past(pp)./(a_beta_past(pp)+b_beta_past(pp))>a_beta(pp)./(a_beta(pp)+b_beta(pp)));
+                    end
+                    effect_size_decrease(pp,:)=betarnd(a_beta_past(pp),b_beta_past(pp),1,10^6)-betarnd(a_beta(pp),b_beta(pp),1,10^6);
+                end
             end
-        end
-        if(yy==length(Yr))
-            t_neg=double(vt<0);
-            Per_Negative_2023(t_nan,dd)=t_neg;
+            t_n=~isnan(p_decrease);
+            n=sum(t_n);
+            p_decrease_trim=p_decrease(t_n);
+
+            samp_decrease=repmat(p_decrease_trim,1,10^6)-rand(length(p_decrease_trim),10^6);
+            samp_decrease(samp_decrease>0)=1;
+            samp_decrease(samp_decrease<0)=0;
             
+            mean_samp=mean(samp_decrease,1);
+            lb_samp=prctile(mean_samp,2.5);
+            ub_samp=prctile(mean_samp,97.5);
+            
+            Table_1{dd+3.*length(Var_Namev),2+yy}=[ num2str(mean(p_decrease_trim),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
+
+            effect_size_decrease=effect_size_decrease(~isnan(effect_size_decrease));
+            effect_size_decrease=effect_size_decrease(:);
+
+            lb_samp=100.*prctile(effect_size_decrease,2.5);
+            ub_samp=100.*prctile(effect_size_decrease,97.5);
+            mean_samp=100.*mean(effect_size_decrease);
+
+            Table_1{dd+4.*length(Var_Namev),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+
+            a_beta_past=a_beta;
+            b_beta_past=b_beta;
+            Per_Surveyed_past=Per_Surveyed;
         end
     end
-    
-%     save(['Polynomial_Slope_State_' Var_Name '.mat'],'State_Poly_Slope');
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Conduct analysis on the state-level vaccine annual slope
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    Raw_Slope=diff(V,[],2);
-
-%     save(['Raw_Slope_State_' Var_Name '.mat'],'Raw_Slope');
-
-    for yy=1:length(Yr)-1
-        vt=Raw_Slope(:,yy);
-        vt=vt(~isnan(vt));
-        n=length(vt);
-        pv=signrank(vt,0,'tail','left');
-        if(pv<0.001)
-            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
-            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p < 0.001 (n = ' num2str(n) ')'];
-        else
-            Raw_Slope_Table{yy,yy}=[ num2str(median(100.*vt),'%3.2f')  '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-            Table_1{dd+1.*length(Var_Namev),2+yy}=[ num2str(median(100.*vt),'%3.2f')  '% p=' num2str(pv,'%4.3f') ' (n=' num2str(n) ')'];
-        end
-        for jj=(yy+1):length(Yr)-1
-            v_temp=Raw_Slope(:,jj)-Raw_Slope(:,yy);
-            v_temp=v_temp(~isnan(v_temp));
-            n=length(v_temp);
-            pv=signrank(v_temp,0,'tail','left');
-            if(pv<0.001)
-                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p < 0.001 (n = ' num2str(n) ')'];
-            else
-                Raw_Slope_Table{yy,jj}=[ num2str(median(100.*v_temp),'%3.2f') '% p = ' num2str(pv,'%4.3f') ' (n = ' num2str(n) ')'];
-            end
-        end
-    end
-
-    Vaccine_Uptake=[table(Year) cell2table(V_Table)];
-    Vaccine_Uptake.Properties.VariableNames={'Years' Year{:}};
-
-    writetable(Vaccine_Uptake,'Comparison_Vaccine_Uptake.xlsx','Sheet',Var_Name);
-
-    Poly_Slope=[table(Year) cell2table(Slope_Table)];
-    Poly_Slope.Properties.VariableNames={'Years' Year{:}};
-
-    writetable(Poly_Slope,'Comparison_Change_Vaccine_Uptake_Polynomial.xlsx','Sheet',Var_Name);
-
-    Data_Slope=[table(Year_Raw) cell2table(Raw_Slope_Table)];
-    Data_Slope.Properties.VariableNames={'Years' Year_Raw{:}};
-
-    writetable(Data_Slope,'Comparison_Change_Vaccine_Uptake_Data.xlsx','Sheet',Var_Name);
 end
 
 Table_1=cell2table(Table_1);
-Table_1.Properties.VariableNames={'Vaccine' Year{:}};
+Table_1.Properties.VariableNames={'Measure','Vaccine',['2017' char(8211) '18'],['2018' char(8211) '19'],['2019' char(8211) '20'],['2020' char(8211) '21'],['2021' char(8211) '22'],['2022' char(8211) '23']};
 writetable(Table_1,'Tables_Main_Text.xlsx','Sheet','Table_1');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Supplement Table comparing uptake across the different years
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Table_S1=cell(length(Var_Namev).*length(Yr),length(Yr)+2);
+
+for dd=1:length(Var_Namev)
+    
+    for yy=1:length(Yr)-1
+        Table_S1{yy+(dd-1).*length(Yr),1}=Var_Namev{dd};
+        Table_S1{yy+(dd-1).*length(Yr),2}=[num2str(Yr) char(8211) num2str(Yr-1999)];
+        VC_Ref=State_Immunization_Statistics(Var_Namev{dd},Yr(yy),State_ID); 
+        [Num_Sampled_Ref,Per_Surveyed_Ref] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
+        a_beta_Ref=VC_Ref.*Num_Sampled_Ref;
+        b_beta_Ref=(1-VC_Ref).*Num_Sampled_Ref;
+        
+        Vac_Ref=NaN.*zeros(length(State_ID),10^6);
+        for ss=1:length(State_ID)
+            if(~isnan(a_beta_Ref(ss)))
+                if(Per_Surveyed_Ref(ss)<1)
+                    Vac_Ref(ss,:)=betarnd(a_beta_Ref(ss),b_beta_Ref(ss),1,10^6);
+                else
+                    Vac_Ref(ss,:)=Vac_Ref(ss);
+                end
+            end
+        end
+
+        for zz=(yy+1):length(Yr)
+            VC_Comp=State_Immunization_Statistics(Var_Namev{dd},Yr(yy),State_ID); 
+            [Num_Sampled_Comp,Per_Surveyed_Comp] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
+            a_beta_Comp=VC_Comp.*Num_Sampled_Comp;
+            b_beta_Comp=(1-VC_Comp).*Num_Sampled_Comp;
+            
+            Vac_Comp=NaN.*zeros(length(State_ID),10^6);
+            for ss=1:length(State_ID)
+                if(~isnan(a_beta_Comp(ss)))
+                    if(Per_Surveyed_Comp(ss)<1)
+                        Vac_Comp(ss,:)=betarnd(a_beta_Comp(ss),b_beta_Comp(ss),1,10^6);
+                    else
+                        Vac_Comp(ss,:)=Vac_Comp(ss);
+                    end
+                end
+            end
+
+            effect_size_decrease=NaN.*zeros(length(b_beta_Comp),10^6);
+            p_decrease=NaN.*zeros(length(b_beta_Comp),1);
+            for pp=1:length(p_decrease)
+                if(~isnan(a_beta_Ref(pp)+a_beta_Comp(pp)))
+                    if(Per_Surveyed_Ref(pp)<1 && Per_Surveyed_Comp(pp)<1)
+                        p_decrease(pp)=integral(@(v)betapdf(v,a_beta_Ref(pp),b_beta_Ref(pp)).*betacdf(v,a_beta_Comp(pp),b_beta_Comp(pp)),0,1);
+                    elseif (Per_Surveyed_Ref(pp)<1)
+                        p_decrease(pp)=1-betacdf(a_beta(pp)./(a_beta(pp)+b_beta(pp)),a_beta_Ref(pp),b_beta_Ref(pp));
+                    elseif (Per_Surveyed_Comp(pp)<1)
+                        p_decrease(pp)=betacdf(a_beta_Ref(pp)./(a_beta_Ref(pp)+b_beta_Ref(pp)),a_beta_Comp(pp),b_beta_Comp(pp));
+                    else
+                        p_decrease(pp)=double(a_beta_Ref(pp)./(a_beta_Ref(pp)+b_beta_Ref(pp))>a_beta_Comp(pp)./(a_beta_Comp(pp)+b_beta_Comp(pp)));
+                    end
+                    effect_size_decrease(pp,:)=betarnd(a_beta_Ref(pp),b_beta_Ref(pp),1,10^6)-betarnd(a_beta_Comp(pp),b_beta_Comp(pp),1,10^6);
+                end
+            end
+            t_n=~isnan(p_decrease);
+            n=sum(t_n);
+            p_decrease_trim=p_decrease(t_n);
+
+            samp_decrease=repmat(p_decrease_trim,1,10^6)-rand(length(p_decrease_trim),10^6);
+            samp_decrease(samp_decrease>0)=1;
+            samp_decrease(samp_decrease<0)=0;
+            
+            mean_samp=mean(samp_decrease,1);
+            lb_samp=prctile(mean_samp,2.5);
+            ub_samp=prctile(mean_samp,97.5);
+            
+            Table_S1{yy+(dd-1).*length(Yr),2+zz}=[ num2str(mean(p_decrease_trim),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
+
+            effect_size_decrease=effect_size_decrease(~isnan(effect_size_decrease));
+            effect_size_decrease=effect_size_decrease(:);
+
+            lb_samp=100.*prctile(effect_size_decrease,2.5);
+            ub_samp=100.*prctile(effect_size_decrease,97.5);
+            mean_samp=100.*mean(effect_size_decrease);
+
+            Table_S1{zz+(dd-1).*length(Yr),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+            
+        end
+    end
+end
+
+
+Table_S1=cell2table(Table_S1);
+Table_S1.Properties.VariableNames={'Vaccine','Reference Year',['2017' char(8211) '18'],['2018' char(8211) '19'],['2019' char(8211) '20'],['2020' char(8211) '21'],['2021' char(8211) '22'],['2022' char(8211) '23']};
+writetable(Table_S1,'Tables_Supplement_Text.xlsx','Sheet','Table_S1');

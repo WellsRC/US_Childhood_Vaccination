@@ -2,7 +2,7 @@ function Figure_2(Year_Inq)
 clc;
 close all;
 
-S=shaperead([pwd '\Spatial_Data\Demographic_Data\cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
+S=shaperead([pwd '/Spatial_Data/Demographic_Data/cb_2018_us_county_500k.shp'],'UseGeoCoords',true);
 State_FIPc={S.STATEFP};
 State_FIP=zeros(size(State_FIPc));
 
@@ -165,11 +165,11 @@ for vv=1:4
     per_county=mean(Vac_Uptake_v(:,vv)>=0.95);
     per_county_samp=squeeze(Vac_Uptake_All_v(vv,:,:)>=0.95);
     per_county_samp=mean(per_county_samp,1);
-    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is 95%% or higher: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
+    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is 95%% or higher: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')/n']);
     per_county=mean(Vac_Uptake_v(:,vv)<0.90);
     per_county_samp=squeeze(Vac_Uptake_All_v(vv,:,:)<0.90);
     per_county_samp=mean(per_county_samp,1);
-    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is less than 90%%: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
+    fprintf(['Percent of counties with ' Vac_Title_v{vv} ' coverage is less than 90%%: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')/n']);
 end
 
     
@@ -177,12 +177,12 @@ end
     per_county_samp=mean(per_county_samp,1);
 
     per_county=mean(Vac_Uptake_v(:,1)>=0.95 & Vac_Uptake_v(:,2)>=0.95 & Vac_Uptake_v(:,3)>=0.95 & Vac_Uptake_v(:,4)>=0.95);
-    fprintf(['Percent of counties coverage 95%% or higher for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
+    fprintf(['Percent of counties coverage 95%% or higher for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')/n']);
 
     per_county_samp=squeeze(Vac_Uptake_All_v(1,:,:)<0.9) & squeeze(Vac_Uptake_All_v(2,:,:)<0.9) & squeeze(Vac_Uptake_All_v(3,:,:)<0.9) & squeeze(Vac_Uptake_All_v(4,:,:)<0.9);
     per_county_samp=mean(per_county_samp,1);
 
     per_county=mean(Vac_Uptake_v(:,1)<0.9 & Vac_Uptake_v(:,2)<0.9 & Vac_Uptake_v(:,3)<0.9 & Vac_Uptake_v(:,4)<0.9);
-    fprintf(['Percent of counties coverage less than 90%% for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')\n']);
+    fprintf(['Percent of counties coverage less than 90%% for all: ' num2str(100.*per_county,'%3.1f') '(' num2str(100.*prctile(per_county_samp,2.5),'%3.1f') '-' num2str(100.*prctile(per_county_samp,97.5),'%3.1f') ')/n']);
 
 end

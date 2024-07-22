@@ -1,6 +1,6 @@
 function [State_R,Data_Year]=Demographics_State(Var_1,State_ID)
 
-    load([pwd '\Spatial_Data\Demographic_Data\State_Population.mat']);
+    load([pwd '/Spatial_Data/Demographic_Data/State_Population.mat']);
     Data_SID=State_Demo.State_ID;
     Data_Year=State_Demo.Year_Data;
     

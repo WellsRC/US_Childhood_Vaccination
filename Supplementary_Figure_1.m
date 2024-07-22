@@ -18,7 +18,7 @@ for jj=1:length(Factor_S)
     end
 end
 
-load([pwd '\Spatial_Data\Trust_Science_Medicine\Trust_in_Science_Stratification.mat']);
+load([pwd '/Spatial_Data/Trust_Science_Medicine/Trust_in_Science_Stratification.mat']);
 
 Y_t=Trust_in_Science.National.Great_Deal+0.5.*Trust_in_Science.National.Only_Some;
 Z.national=log(Y_t./(1-Y_t));

@@ -5,7 +5,7 @@ close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
 % Obtain County and State IDS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
-[State_ID,County_ID]=Read_ID_Number();
+[State_ID,~]=Read_ID_Number();
 
 Yr=[2017:2022];
 
@@ -20,22 +20,47 @@ X_State=cell(length(Yr),length(Var_Name));
 D_County=cell(length(Yr),length(Var_Name_Demo));
 X_County=cell(length(Yr),length(Var_Name));
 
+Samp_Size=10^3;
 VN={'Parental_Trust_in_Medicine','Parental_Trust_in_Science','Trust_in_Medicine','Trust_in_Science','Sex','Race','Political','Education','Economic','Uninsured_19_under','Income'}; 
 for yy=1:length(Yr)
-       
-    for jj=1:length(Var_Name)
-        X_State{yy,jj}=Return_State_Data(Var_Name{jj},Yr(yy),State_ID);
-        X_County{yy,jj}=Return_County_Data(Var_Name{jj},Yr(yy),County_ID);
-    end
+    [Trust_in_Medicine_State,Parental_Trust_in_Medicine_State,Trust_in_Science_State,Parental_Trust_in_Science_State,Trust_in_Medicine_County,Parental_Trust_in_Medicine_County,Trust_in_Science_County,Parental_Trust_in_Science_County,County_ID]=Return_Trust_Data_Randomized_BN(Yr(yy),State_ID,Samp_Size);   
+    
+    Parental_Trust_in_Medicine_State=squeeze(Parental_Trust_in_Medicine_State);
+    X_State{yy,1}=Parental_Trust_in_Medicine_State(:);
+
+    Parental_Trust_in_Science_State=squeeze(Parental_Trust_in_Science_State);
+    X_State{yy,2}=Parental_Trust_in_Science_State(:);
+    
+    Trust_in_Medicine_State=squeeze(Trust_in_Medicine_State);
+    X_State{yy,3}=Trust_in_Medicine_State(:);
+
+    Trust_in_Science_State=squeeze(Trust_in_Science_State);
+    X_State{yy,4}=Trust_in_Science_State(:);
+
+    % County
+    Parental_Trust_in_Medicine_County=squeeze(Parental_Trust_in_Medicine_County);
+    X_County{yy,1}=Parental_Trust_in_Medicine_County(:);
+
+    Parental_Trust_in_Science_County=squeeze(Parental_Trust_in_Science_County);
+    X_County{yy,2}=Parental_Trust_in_Science_County(:);
+    
+    Trust_in_Medicine_County=squeeze(Trust_in_Medicine_County);
+    X_County{yy,3}=Trust_in_Medicine_County(:);
+
+    Trust_in_Science_County=squeeze(Trust_in_Science_County);
+    X_County{yy,4}=Trust_in_Science_County(:);
+
 
     for jj=1:length(Var_Name_Demo)
         [State_Demo,Data_Year]=Demographics_State(Var_Name_Demo{jj},State_ID);
-        D_State{yy,jj}=State_Demo(:,Data_Year==Yr(yy));
+        State_Demo=repmat(State_Demo(:,Data_Year==Yr(yy)),1,Samp_Size);
+        D_State{yy,jj}=State_Demo(:);
         [County_Demo,Data_Year]=Demographics_County(Var_Name_Demo{jj},County_ID);
-        D_County{yy,jj}=County_Demo(:,Data_Year==Yr(yy));
+        County_Demo=repmat(County_Demo(:,Data_Year==Yr(yy)),1,Samp_Size);
+        D_County{yy,jj}=County_Demo(:);
     end
-    
 end
+
 xt=[cell2mat(X_State) cell2mat(D_State); cell2mat(X_County) cell2mat(D_County)];
 xt(xt==1)=1-10^(-8);
 xt(xt==0)=10^(-8);

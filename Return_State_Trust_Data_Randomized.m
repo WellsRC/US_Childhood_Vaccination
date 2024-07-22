@@ -1,6 +1,4 @@
-function State_Factor_v=Return_State_Data(Var_Name,Year_Q,State_ID)
-
-Immunization_Variables={'All_immunizations','Medical_Exemption','Religious_Exemption','Philosophical_Exemption','DTaP','Polio','MMR','VAR'};
+function State_Factor_v=Return_State_Trust_Data_Randomized(Var_Name,Year_Q,State_ID,Samp_Size)
 
 if(strcmp(Var_Name,'Trust_in_Medicine'))
     [county_weight]=Return_Population_Weight_County();
@@ -19,13 +17,17 @@ if(strcmp(Var_Name,'Trust_in_Medicine'))
 
     [~,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_M{1},temp_County_ID);
 
-    X_t=zeros(length(Factor_M),length(temp_County_ID),length(Data_Year));
+    X_t=zeros(length(Factor_M),length(temp_County_ID),length(Data_Year),Samp_Size);
 
     for jj=1:length(Factor_M)        
-        [~,County_Trust_in_Medicine_v,~]=Stratified_Trust_in_Science_Medicine_County(Factor_M{jj},temp_County_ID);
-        X_t(jj,:,:)=County_Trust_in_Medicine_v;
+        [~,County_Trust_in_Medicine_v,~]=Stratified_Trust_in_Science_Medicine_County_Random_Sample(Factor_M{jj},temp_County_ID,Samp_Size);
+        X_t(jj,:,:,:)=County_Trust_in_Medicine_v;
     end
-    State_Factor_v=Overall_State_County_Trust(county_weight,X_t,beta_z_Medicine,pop_interest,Year_Q);    
+
+    State_Factor_v=zeros(length(State_ID),length(Year_Q),Samp_Size);
+    for ss=1:Samp_Size
+        State_Factor_v(:,:,ss)=Overall_State_County_Trust(county_weight,squeeze(X_t(:,:,:,ss)),beta_z_Medicine,pop_interest,Year_Q);  
+    end
         
 elseif strcmp(Var_Name,'Trust_in_Science')
     [county_weight]=Return_Population_Weight_County();
@@ -44,16 +46,17 @@ elseif strcmp(Var_Name,'Trust_in_Science')
     
     [~,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{1},temp_County_ID);
 
-    X_t=zeros(length(Factor_S),length(temp_County_ID),length(Data_Year));
+    X_t=zeros(length(Factor_S),length(temp_County_ID),length(Data_Year),Samp_Size);
 
     for jj=1:length(Factor_S)        
-        [County_Trust_in_Science_v,~,~]=Stratified_Trust_in_Science_Medicine_County(Factor_S{jj},temp_County_ID);
-        X_t(jj,:,:)=County_Trust_in_Science_v;
+        [County_Trust_in_Science_v,~,~]=Stratified_Trust_in_Science_Medicine_County_Random_Sample(Factor_S{jj},temp_County_ID,Samp_Size);
+        X_t(jj,:,:,:)=County_Trust_in_Science_v;
     end
-    State_Factor_v=Overall_State_County_Trust(county_weight,X_t,beta_z_Science,pop_interest,Year_Q);    
     
-elseif(sum(strcmp(Var_Name,Immunization_Variables))>0)
-    State_Factor_v=State_Immunization_Statistics(Var_Name,Year_Q,State_ID);
+    State_Factor_v=zeros(length(State_ID),length(Year_Q),Samp_Size);
+    for ss=1:Samp_Size
+        State_Factor_v(:,:,ss)=Overall_State_County_Trust(county_weight,squeeze(X_t(:,:,:,ss)),beta_z_Science,pop_interest,Year_Q);  
+    end 
 elseif(strcmp(Var_Name,'Parental_Trust_in_Medicine'))
     [county_weight]=Return_Population_Weight_County();
     county_weight.Trust_Computation=county_weight.Trust_Computation(:,:,1:2,:,:);
@@ -71,13 +74,17 @@ elseif(strcmp(Var_Name,'Parental_Trust_in_Medicine'))
 
     [~,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_M{1},temp_County_ID);
 
-    X_t=zeros(length(Factor_M),length(temp_County_ID),length(Data_Year));
+    X_t=zeros(length(Factor_M),length(temp_County_ID),length(Data_Year),Samp_Size);
 
     for jj=1:length(Factor_M)        
-        [~,County_Trust_in_Medicine_v,~]=Stratified_Trust_in_Science_Medicine_County(Factor_M{jj},temp_County_ID);
-        X_t(jj,:,:)=County_Trust_in_Medicine_v;
+        [~,County_Trust_in_Medicine_v,~]=Stratified_Trust_in_Science_Medicine_County_Random_Sample(Factor_M{jj},temp_County_ID,Samp_Size);
+        X_t(jj,:,:,:)=County_Trust_in_Medicine_v;
     end
-    State_Factor_v=Overall_State_County_Trust_Parental(county_weight,X_t,beta_z_Medicine,pop_interest,Year_Q);    
+    
+    State_Factor_v=zeros(length(State_ID),length(Year_Q),Samp_Size);
+    for ss=1:Samp_Size
+        State_Factor_v(:,:,ss)=Overall_State_County_Trust_Parental(county_weight,squeeze(X_t(:,:,:,ss)),beta_z_Medicine,pop_interest,Year_Q);  
+    end
         
 elseif strcmp(Var_Name,'Parental_Trust_in_Science')
     [county_weight]=Return_Population_Weight_County();
@@ -96,12 +103,17 @@ elseif strcmp(Var_Name,'Parental_Trust_in_Science')
     
     [~,~,Data_Year]=Stratified_Trust_in_Science_Medicine_County(Factor_S{1},temp_County_ID);
 
-    X_t=zeros(length(Factor_S),length(temp_County_ID),length(Data_Year));
+    X_t=zeros(length(Factor_S),length(temp_County_ID),length(Data_Year),Samp_Size);
 
     for jj=1:length(Factor_S)        
-        [County_Trust_in_Science_v,~,~]=Stratified_Trust_in_Science_Medicine_County(Factor_S{jj},temp_County_ID);
-        X_t(jj,:,:)=County_Trust_in_Science_v;
+        [County_Trust_in_Science_v,~,~]=Stratified_Trust_in_Science_Medicine_County_Random_Sample(Factor_S{jj},temp_County_ID,Samp_Size);
+        X_t(jj,:,:,:)=County_Trust_in_Science_v;
     end
-    State_Factor_v=Overall_State_County_Trust_Parental(county_weight,X_t,beta_z_Science,pop_interest,Year_Q);  
+    
+
+    State_Factor_v=zeros(length(State_ID),length(Year_Q),Samp_Size);
+    for ss=1:Samp_Size
+        State_Factor_v(:,:,ss)=Overall_State_County_Trust_Parental(county_weight,squeeze(X_t(:,:,:,ss)),beta_z_Science,pop_interest,Year_Q);  
+    end  
     
 end
