@@ -2,14 +2,14 @@ clear;
 clc;
 close all;
 
-T=readtable('Bayesian_Network.xlsx','Sheet','Summary');
-Sheet_AIC=T.Sheet(T.delta_AIC==0);
-
-T=readtable('Bayesian_Network.xlsx','Sheet',Sheet_AIC{:},'Range','B7:M20');
+T=readtable('Bayesian_Network.xlsx','Sheet','AIC_Optimal','Range','B2:M15');
 
 A=table2array(T(3:end,2:end));
 N=T.Variable(3:end);
-
+PTM=A(:,strcmp(N,'Parental Trust in Medicine'));
+PTS=A(:,strcmp(N,'Parental Trust in Science'));
+OTM=A(:,strcmp(N,'Trust in Medicine'));
+OTS=A(:,strcmp(N,'Trust in Science'));
 G=digraph(A,N);
 
 xx=[-100 -1;
@@ -52,10 +52,41 @@ for ii=1:length(G.Edges.Weight)
     end
 end
 
-figure('units','normalized','outerposition',[0 0 1 1]);
-
-plot(G,'EdgeColor',CE,'LineWidth',2,'Marker','s','Markersize',10,'NodeFontSize',18,'ArrowSize',12,'NodeColor','k','EdgeLabel',temp,'EdgeFontsize',18,'EdgeLabelColor',CE,'Layout','layered','Sinks',[4 5],'Sources',[7 8])
+figure('units','normalized','outerposition',[0 0.1 1 0.8]);
+subplot('Position',[-0.07 -0.16 0.7 1.25])
+plot(G,'EdgeColor',CE,'LineWidth',2,'Marker','s','Markersize',10,'NodeFontSize',18,'ArrowSize',12,'NodeColor','k','EdgeLabel',temp,'EdgeFontsize',18,'EdgeLabelColor',CE,'Layout','layered','Sinks',[4 5],'Sources',[7 8],'Direction','right')
+text(0.12,0.9,'A','Fontsize',34,'Units','normalized')
 axis off
 box off
+subplot('Position',[0.73 0.1 0.26 0.875])
+Trust_Plot=[PTS PTM OTS OTM]';
+Trust_Plot=Trust_Plot(:,~strcmp(N,'Economic'));
+N=N(~strcmp(N,'Economic'));
+C=[hex2rgb('#a6cee3');
+hex2rgb('#1f78b4');
+hex2rgb('#b2df8a');
+hex2rgb('#33a02c');
+hex2rgb('#fb9a99');
+hex2rgb('#e31a1c');
+hex2rgb('#fdbf6f');
+hex2rgb('#ff7f00');
+hex2rgb('#cab2d6');
+hex2rgb('#6a3d9a');];
+b=barh([1:4],Trust_Plot);
+for ii=1:length(N)
+   b(ii).FaceColor=C(ii,:);
+end
+TL={'Science','Medicine','Science','Medicine'};
 
-print(gcf,['Bayesian_Network_Trust.png'],'-dpng','-r600');
+set(gca,'LineWidth',2,'tickdir','out','YTick',[1:4],'YTickLabel',TL,'Fontsize',14)
+ytickangle(90)
+text(-0.1,0.75,'Overall trust','Fontsize',18,'Rotation',90,'HorizontalAlignment','center','Units','normalized');
+text(-0.1,0.25,'Parental trust','Fontsize',18,'Rotation',90,'HorizontalAlignment','center','Units','normalized');
+xlabel('Coefficient value','Fontsize',18)
+box off
+xlim([-2 2])
+legend(N,'Location','northoutside','NumColumns',2,'Fontsize',12);
+
+text(-0.15,1.2,'B','Fontsize',34,'Units','normalized')
+print(gcf,['Figure_1.png'],'-dpng','-r600');
+print(gcf,['Figure_1.tiff'],'-dtiff','-r600');

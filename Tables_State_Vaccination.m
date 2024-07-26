@@ -50,7 +50,7 @@ for dd=1:length(Var_Namev)
         VC=State_Immunization_Statistics(Var_Name,Yr(yy),State_ID); 
         t_n=~isnan(VC);
         n=sum(t_n);
-        Table_1{dd,2+yy}=[ num2str(100.*mean(VC(t_n)),'%3.1f') '% (' num2str(100.*min(VC(t_n)),'%3.1f') '%' char(8211) num2str(100.*max(VC(t_n)),'%3.1') '%) (n = ' num2str(n) ')'];
+        Table_1{dd,2+yy}=[ num2str(100.*mean(VC(t_n)),'%3.1f') '% (' num2str(100.*min(VC(t_n)),'%3.1f') '%' char(8211) num2str(100.*max(VC(t_n)),'%3.1f') '%) (n = ' num2str(n) ')'];
 
         [Num_Sampled,Per_Surveyed] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
 
@@ -84,11 +84,11 @@ for dd=1:length(Var_Namev)
         
         Table_1{dd+length(Var_Namev),2+yy}=[ num2str(mean(p_95),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
 
-
+        med_samp=median(100.*effect_size_95(:));
         lb_samp=prctile(100.*effect_size_95(:),2.5);
         ub_samp=prctile(100.*effect_size_95(:),97.5);
-        mean_samp=mean(100.*effect_size_95(:));
-        Table_1{dd+2.*length(Var_Namev),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+        
+        Table_1{dd+2.*length(Var_Namev),2+yy}=[ num2str(med_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
 
         if(yy==1)
             Table_1{dd+3.*length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
@@ -110,8 +110,8 @@ for dd=1:length(Var_Namev)
                     else
                         p_decrease(pp)=double(a_beta_past(pp)./(a_beta_past(pp)+b_beta_past(pp))>a_beta(pp)./(a_beta(pp)+b_beta(pp)));
                     end
-                    effect_size_decrease(pp,:)=betarnd(a_beta_past(pp),b_beta_past(pp),1,10^6)-betarnd(a_beta(pp),b_beta(pp),1,10^6);
                 end
+                effect_size_decrease(pp,:)=betarnd(a_beta_past(pp),b_beta_past(pp),1,10^6)-betarnd(a_beta(pp),b_beta(pp),1,10^6);
             end
             t_n=~isnan(p_decrease);
             n=sum(t_n);
@@ -127,14 +127,13 @@ for dd=1:length(Var_Namev)
             
             Table_1{dd+3.*length(Var_Namev),2+yy}=[ num2str(mean(p_decrease_trim),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
 
-            effect_size_decrease=effect_size_decrease(~isnan(effect_size_decrease));
-            effect_size_decrease=effect_size_decrease(:);
+            effect_size_decrease_trim=effect_size_decrease(t_n,:);
 
-            lb_samp=100.*prctile(effect_size_decrease,2.5);
-            ub_samp=100.*prctile(effect_size_decrease,97.5);
-            mean_samp=100.*mean(effect_size_decrease);
+            med_samp=median(100.*effect_size_decrease_trim(:));
+            lb_samp=prctile(100.*effect_size_decrease_trim(:),2.5);
+            ub_samp=prctile(100.*effect_size_decrease_trim(:),97.5);
 
-            Table_1{dd+4.*length(Var_Namev),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+            Table_1{dd+4.*length(Var_Namev),2+yy}=[ num2str(med_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
 
             a_beta_past=a_beta;
             b_beta_past=b_beta;
@@ -155,10 +154,13 @@ writetable(Table_1,'Tables_Main_Text.xlsx','Sheet','Table_1');
 Table_S1=cell(length(Var_Namev).*length(Yr),length(Yr)+2);
 
 for dd=1:length(Var_Namev)
+    for yy=1:length(Yr)
+
+        Table_S1{yy+(dd-1).*length(Yr),1}=Var_Namev{dd};
+        Table_S1{yy+(dd-1).*length(Yr),2}=[num2str(Yr(yy)) char(8211) num2str(Yr(yy)-1999)];
+    end
     
     for yy=1:length(Yr)-1
-        Table_S1{yy+(dd-1).*length(Yr),1}=Var_Namev{dd};
-        Table_S1{yy+(dd-1).*length(Yr),2}=[num2str(Yr) char(8211) num2str(Yr-1999)];
         VC_Ref=State_Immunization_Statistics(Var_Namev{dd},Yr(yy),State_ID); 
         [Num_Sampled_Ref,Per_Surveyed_Ref] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
         a_beta_Ref=VC_Ref.*Num_Sampled_Ref;
@@ -176,8 +178,8 @@ for dd=1:length(Var_Namev)
         end
 
         for zz=(yy+1):length(Yr)
-            VC_Comp=State_Immunization_Statistics(Var_Namev{dd},Yr(yy),State_ID); 
-            [Num_Sampled_Comp,Per_Surveyed_Comp] = State_Immunization_Survey_Sample(Yr(yy),State_ID);
+            VC_Comp=State_Immunization_Statistics(Var_Namev{dd},Yr(zz),State_ID); 
+            [Num_Sampled_Comp,Per_Surveyed_Comp] = State_Immunization_Survey_Sample(Yr(zz),State_ID);
             a_beta_Comp=VC_Comp.*Num_Sampled_Comp;
             b_beta_Comp=(1-VC_Comp).*Num_Sampled_Comp;
             
@@ -227,9 +229,9 @@ for dd=1:length(Var_Namev)
 
             lb_samp=100.*prctile(effect_size_decrease,2.5);
             ub_samp=100.*prctile(effect_size_decrease,97.5);
-            mean_samp=100.*mean(effect_size_decrease);
+            med_samp=100.*median(effect_size_decrease);
 
-            Table_S1{zz+(dd-1).*length(Yr),2+yy}=[ num2str(mean_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+            Table_S1{zz+(dd-1).*length(Yr),2+yy}=[ num2str(med_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
             
         end
     end

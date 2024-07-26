@@ -2,11 +2,7 @@ clear;
 clc;
 close all;
 
-
-T=readtable('Bayesian_Network.xlsx','Sheet','Summary');
-Sheet_AIC=T.Sheet(T.delta_AIC==0);
-
-T=readtable('Bayesian_Network.xlsx','Sheet',Sheet_AIC{:},'Range','B7:M20');
+T=readtable('Bayesian_Network.xlsx','Sheet','AIC_Optimal','Range','B5:M15');
 
 v_name=T.Variable;
 temp_beta_psci=T.ParentalTrustInScience(ismember(v_name,{'Parental Trust in Medicine';'Parental Trust in Science';'Trust in Medicine';'Trust in Science'}))';

@@ -53,9 +53,18 @@ Distance_Optimal_Total=sqrt(sum(([x y]-repmat(X_opt,height(T),1)).^2,2));
 
 
 %% Compute the pdf wieghts
-d=1;
-lambda_d=fmincon(@(z)10.^6.*(integral(@(x)exp(-z.*x.^2),0,d)/integral(@(x)exp(-z.*x.^2),0,sqrt(2))-0.95).^2,260,[],[],[],[],10,1000);
-pdf_dist=@(dist) exp(-lambda_d.*dist.^2)/integral(@(x)exp(-lambda_d.*x.^2),0,sqrt(2));
+d=sqrt(4.*0.01./pi);
+prct_arc=0.99;
+x0=linspace(-2.5,2.5,10001);
+fval=zeros(1,10001);
+for mm=1:10001
+    fval(mm)=(integral(@(x)exp(-10.^x0(mm).*x.^2),0,d,'RelTol',1e-18,'AbsTol',1e-18)/integral(@(x)exp(-10.^x0(mm).*x.^2),0,sqrt(2),'RelTol',1e-18,'AbsTol',1e-18)-prct_arc).^2;
+end
+x0=x0(fval==min(fval));
+
+options=optimoptions("fmincon",'FunctionTolerance',10^(-16),'MaxFunctionEvaluations',10^(4),'MaxIterations',10^6,'StepTolerance',10^(-8));
+lambda_d=10.^fmincon(@(z)(10.^8.*(integral(@(x)exp(-10.^z.*x.^2),0,d,'RelTol',1e-18,'AbsTol',1e-18)/integral(@(x)exp(-10.^z.*x.^2),0,sqrt(2),'RelTol',1e-18,'AbsTol',1e-18)-prct_arc).^2),x0,[],[],[],[],-3,3,[],options);
+pdf_dist=@(dist) exp(-lambda_d.*dist.^2)/integral(@(x)exp(-lambda_d.*x.^2),0,sqrt(2),'RelTol',1e-18,'AbsTol',1e-18);
 
 Weight_MMR=pdf_dist(Distance_Optimal_MMR)./sum(pdf_dist(Distance_Optimal_MMR));
 Weight_DTaP=pdf_dist(Distance_Optimal_DTaP)./sum(pdf_dist(Distance_Optimal_DTaP));

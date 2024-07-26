@@ -23,8 +23,9 @@ F_State=zeros(size(Est_State));
 F_County=zeros(size(Est_County));
 for ss=1:length(Y_State)
     if(Per_Sampled(ss)<1)
-        F_State(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*((Est_State(ss)-log(v./(1-v))).^2),10^(-8),1-10^(-8));
-        F_County(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*((Est_County(ss)-log(v./(1-v))).^2),10^(-8),1-10^(-8));
+        NF=betacdf(1-10^(-8),a_beta(ss),b_beta(ss))-betacdf(10^(-8),a_beta(ss),b_beta(ss));
+        F_State(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*((Est_State(ss)-log(v./(1-v))).^2),10^(-8),1-10^(-8))./NF;
+        F_County(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*((Est_County(ss)-log(v./(1-v))).^2),10^(-8),1-10^(-8))./NF;
     else
         F_State(ss)=(Est_State(ss)-Y_State(ss)).^2;
         F_County(ss)=(Est_County(ss)-Y_State(ss)).^2;

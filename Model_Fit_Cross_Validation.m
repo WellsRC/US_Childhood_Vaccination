@@ -3,6 +3,7 @@ clc;
 close all;
 
 parpool(48);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
 % Obtain County and State IDS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
@@ -176,10 +177,14 @@ for dd=1:length(Inqv) % Cycle through the  different vaccines
 
     X_indx=zeros(num_model-1,length(Var_N));
        
-    lb=-300.*ones(1,2+1+length(Var_N));
+    % Calibrated the bounds to improve the convergence of the models
+    lb=-1.25.*ones(1,2+1+length(Var_N));
     lb(2+1+[6:7])=0; % Trust lower bound (Assume can only have postive influence on uptake)
-    ub=300.*ones(1,2+1+length(Var_N));
+    ub=1.25.*ones(1,2+1+length(Var_N));
     ub(1:2)=0;
+
+    lb(3)=0;
+    ub(3)=20;
     
     Num_Data_Pts(:,dd)=length(Y_State);
     % Run the fitting
@@ -192,11 +197,32 @@ for dd=1:length(Inqv) % Cycle through the  different vaccines
             X_temp=[RE_State PE_State Z_State(:,temp_all==1)];
             Xc_temp=[RE_County_All PE_County_All Z_County_All(:,temp_all==1)];
             
+            % Use past models to improve convergence
+            x_sub=[];            
+            for sm=1:nn-1
+                dX=X_indx(nn,:)-X_indx(sm,:);
+                if(min(dX)==0)
+                    par_temp=squeeze(beta_v(dd,sm,:))';
+                    par_sub=par_temp([1 1 temp_all]==1);
+                    x_sub=[x_sub;par_sub];
+                end
+            end
+            
+            N_0=5.*10^3+size(x_sub,1);
             lb_t=lb([1 1 temp_all]==1);
             ub_t=ub([1 1 temp_all]==1);
-            f_search=zeros(5.*10^3,1);
-            x0=repmat(lb_t,5.*10^3,1)+repmat((ub_t-lb_t),5.*10^3,1).*lhsdesign(5.*10^3,length(lb_t));
-            parfor ii=1:5*10^3
+
+            f_search=zeros(N_0,1);
+
+            if(~isempty(x_sub))
+                lb_f=min(x_sub,[],1);
+                ub_f=max(x_sub,[],1);
+                x0=[x_sub; repmat(lb_t,2.5.*10^3,1)+repmat((ub_t-lb_t),2.5.*10^3,1).*lhsdesign(2.5.*10^3,length(lb_t)); repmat(lb_f,2.5.*10^3,1)+repmat((ub_f-lb_f),2.5.*10^3,1).*lhsdesign(2.5.*10^3,length(lb_f))];
+            else
+                x0=[repmat(lb_t,N_0,1)+repmat((ub_t-lb_t),N_0,1).*lhsdesign(N_0,length(lb_t))];
+            end
+            
+            parfor ii=1:N_0
                 f_search(ii)=Train_Model(x0(ii,:),X_temp,Xc_temp,Y_State,County_Weight,temp_yr,Data_Yr_County,Per_Sampled,a_beta,b_beta);
             end
             x0=[x0 f_search];
@@ -209,13 +235,46 @@ for dd=1:length(Inqv) % Cycle through the  different vaccines
             for ii=1:5
                 [est_par(ii,:),fv(ii)]=fmincon(@(x)Train_Model(x,X_temp,Xc_temp,Y_State,County_Weight,temp_yr,Data_Yr_County,Per_Sampled,a_beta,b_beta),x0(ii,:),[],[],[],[],lb_t,ub_t,[],options);
             end
+
+            sigma_s=sqrt(min(fv)./(2.*length(Y_State)));
             % Evalaute goodness of fit
-            sigma_s=sqrt(min(fv)./length(Y_State));
             p_c=est_par(fv==min(fv),:);
             p_c=p_c(1,:);
-            res=(X_temp*(p_c')-Y_State);
+
+            Est_State=X_temp*(p_c');
+
+            uy=unique(Data_Yr_County);
+            Est_County=[];
+            for jj=1:length(County_Weight)
+                X=Xc_temp(uy(jj)==Data_Yr_County,:);
+                w=County_Weight{jj};
+            
+                z_temp=X*(p_c');
+                v_temp=1./(1+exp(-z_temp));
+                v_state_temp=w*v_temp;
+                v_state_temp(v_state_temp>=1)=1-10^(-8);
+                v_state_temp(v_state_temp<=0)=10^(-8); 
+                y_new=log(v_state_temp./(1-v_state_temp));    
+                Est_County=[Est_County;y_new];
+            end
+            
+            Est_County=Est_County(temp_yr);
+            
+            L_State=zeros(size(Est_State));
+            L_County=zeros(size(Est_County));
+            for ss=1:length(Y_State)
+                if(Per_Sampled(ss)<1)
+                    NF=betacdf(1-10^(-8),a_beta(ss),b_beta(ss))-betacdf(10^(-8),a_beta(ss),b_beta(ss));
+                    L_State(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*normpdf(Est_State(ss)-log(v./(1-v)),0,sigma_s),10^(-8),1-10^(-8))./NF;
+                    L_County(ss)=integral(@(v)betapdf(v,a_beta(ss),b_beta(ss)).*normpdf(Est_County(ss)-log(v./(1-v)),0,sigma_s),10^(-8),1-10^(-8))./NF;
+                else
+                    L_State(ss)=normpdf(Est_State(ss)-Y_State(ss),0,sigma_s);
+                    L_County(ss)=normpdf(Est_County(ss)-Y_State(ss),0,sigma_s);
+                end
+            end
+
             beta_v(dd,nn,[1 1 temp_all]==1)=p_c;
-            Log_Likelihood_M(nn,dd)=sum(log(normpdf(res,0,sigma_s)));
+            Log_Likelihood_M(nn,dd)=sum(log(L_State))+sum(log(L_County));
     
             % compute the cross valdation
             X_temp=[RE_County PE_County Z_County(:,temp_all==1)];

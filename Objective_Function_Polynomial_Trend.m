@@ -8,5 +8,8 @@ end
 
 V=1./(1+exp(-Z));
 
-L=-sum(log(betapdf(V(:),a_beta_trim(:),b_beta_trim(:))));
+L_temp=log(betapdf(V(:),a_beta_trim(:),b_beta_trim(:)));
+L_temp(L_temp<0 & isinf(L_temp))=-10^32;
+
+L=-sum(L_temp);
 end
