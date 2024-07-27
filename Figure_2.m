@@ -17,13 +17,13 @@ S=S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
 Vac_Nam_v={'MMR','DTaP','Polio','VAR'};
 Vac_Title_v={'MMR','DTaP','IPV','VAR'};
 Vac_Uptake_v=zeros(length(County_ID),length(Vac_Nam_v));
-NSamp=10^4;
+NSamp=5.*10^4;
 Vac_Uptake_All_v=zeros(length(Vac_Nam_v),length(County_ID),NSamp);
 for vv=1:4
     [Vac_Uptake] = County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID);
     Vac_Uptake_All_v(vv,:,:)=repmat(Vac_Uptake,1,NSamp);
     tf=isnan(Vac_Uptake);
-    [Vac_Uptake(isnan(Vac_Uptake)),v_temp]=Approximated_County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID(isnan(Vac_Uptake)));
+    [Vac_Uptake(isnan(Vac_Uptake)),v_temp]=Approximated_County_Immunization_Statistics(Vac_Nam_v{vv},Year_Inq,County_ID(isnan(Vac_Uptake)),NSamp);
     Vac_Uptake_All_v(vv,tf,:)=v_temp;
     Vac_Uptake_v(:,vv)=Vac_Uptake;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55

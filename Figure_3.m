@@ -2,7 +2,7 @@ clear;
 clc;
 close all;
 
-T=readtable('Bayesian_Network.xlsx','Sheet','AIC_Optimal','Range','B5:M15');
+T=readtable('Bayesian_Network.xlsx','Sheet','AIC_Optimal','Range','B2:M15');
 
 v_name=T.Variable;
 temp_beta_psci=T.ParentalTrustInScience(ismember(v_name,{'Parental Trust in Medicine';'Parental Trust in Science';'Trust in Medicine';'Trust in Science'}))';
@@ -166,6 +166,7 @@ for vv=1:4
     plot(dT,m,'color',hex2rgb('#F0810F'),'LineWidth',2)
     fprintf(['Magnitude of increase in vaccine uptake for trust in science for ' Inqv_t{vv} ':' num2str(m(end),'%3.2f') '%% (' num2str(Z_lb2(vv,2,end),'%3.2f') '-' num2str(Z_ub2(vv,2,end),'%3.2f') ')\n'])
     fprintf(['Probability of decrease in vaccine uptake for trust in science for ' Inqv_t{vv} ':' num2str(per_decrease(vv,2,end)) '\n'])
+    fprintf(['Probability of decrease in vaccine uptake for trust in medicine for ' Inqv_t{vv} ':' num2str(per_decrease(vv,1,end)) '\n'])
     plot(dT,zeros(size(dT)),'k-.','LineWidth',1.5)
 
     title(Inqv_t{vv})
@@ -220,8 +221,8 @@ for vv=1:4
 %     ylim([-1 3]);
     xlim([0 0.05]);
     ytickformat('percentage')
-    ylabel('Change in vaccine uptake','FontSize',18)
-    xlabel('Change in trust medicine','FontSize',18)
+    ylabel('Change in parental trust','FontSize',18)
+    xlabel('Change in trust in medicine','FontSize',18)
     text(-0.25,1.05,char(64+vv),'Fontsize',24,'Units','normalized');
     text(0.01,0.9,Variables{1},'color',hex2rgb('#063852'),'Fontsize',18,'Units','normalized');
     text(0.01,0.98,Variables{2},'color',hex2rgb('#F0810F'),'Fontsize',18,'Units','normalized');
@@ -262,7 +263,7 @@ for vv=1:4
 %     ylim([-1 3]);
     xlim([0 0.05]);
     ytickformat('percentage')
-    ylabel('Change in vaccine uptake','FontSize',18)
+    ylabel('Change in parental trust','FontSize',18)
     xlabel('Change in trust in science','FontSize',18)
     text(-0.25,1.05,char(64+vv),'Fontsize',24,'Units','normalized');
     text(0.01,0.9,Variables{1},'color',hex2rgb('#063852'),'Fontsize',18,'Units','normalized');

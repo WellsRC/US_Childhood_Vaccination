@@ -36,7 +36,7 @@ for dd=1:length(Var_Namev)
 
     Var_Name=Var_Namev{dd}; % Read the specified vaccine of interest
 
-    N_Samp=10^3;
+    N_Samp=5.*10^3;
     Trust_Temporal=zeros(length(State_ID),length(Yr),N_Samp);
     for yy=1:length(Yr)
         Trust=squeeze(Return_State_Trust_Data_Randomized(Var_Name,Yr(yy),State_ID,N_Samp));   
@@ -178,7 +178,7 @@ for dd=1:length(Var_Namev)
 
     Var_Name=Var_Namev{dd}; % Read the specified vaccine of interest
 
-    N_Samp=10^3;
+    N_Samp=5.*10^3;
     Trust_Temporal=zeros(length(State_ID),length(Yr),N_Samp);
     for yy=1:length(Yr)
         Trust=squeeze(Return_State_Trust_Data_Randomized(Var_Name,Yr(yy),State_ID,N_Samp));   
