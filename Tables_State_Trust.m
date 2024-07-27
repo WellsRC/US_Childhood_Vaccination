@@ -162,18 +162,18 @@ Var_Namev={'Trust_in_Science','Trust_in_Medicine'};
 
 Measure={'Trust','Proportion of states trust declined','Extent of decline in trust','Probability of initial decent'};
 
-Table_S3=cell(4.*length(Var_Namev),length(Yr)+2);
+Table_S2=cell(4.*length(Var_Namev),length(Yr)+2);
 options=optimoptions('fmincon','FunctionTolerance',10^(-9),'MaxFunctionEvaluations',10^4,'MaxIterations',10^5);
 for dd=1:length(Var_Namev)
     
 
-    Table_S3{dd,2}=Var_Namev{dd};
-    Table_S3{dd+length(Var_Namev),2}=Var_Namev{dd};
-    Table_S3{dd+2.*length(Var_Namev),2}=Var_Namev{dd};
-    Table_S3{dd+3.*length(Var_Namev),2}=Var_Namev{dd};
+    Table_S2{dd,2}=Var_Namev{dd};
+    Table_S2{dd+length(Var_Namev),2}=Var_Namev{dd};
+    Table_S2{dd+2.*length(Var_Namev),2}=Var_Namev{dd};
+    Table_S2{dd+3.*length(Var_Namev),2}=Var_Namev{dd};
 
     for ss=1:4
-        Table_S3{dd+(ss-1).*length(Var_Namev),1}=Measure{ss};
+        Table_S2{dd+(ss-1).*length(Var_Namev),1}=Measure{ss};
     end
 
     Var_Name=Var_Namev{dd}; % Read the specified vaccine of interest
@@ -185,11 +185,11 @@ for dd=1:length(Var_Namev)
         Trust_Temporal(:,yy,:)=Trust;
         t_n=~isnan(Trust);
         n=sum(~isnan(sum(Trust,2)));
-        Table_S3{dd,2+yy}=[ num2str(100.*mean(Trust(t_n)),'%3.1f') '% (' num2str(100.*min(Trust(t_n)),'%3.1f') '%' char(8211) num2str(100.*max(Trust(t_n)),'%3.1f') '%) (n = ' num2str(n) ')'];
+        Table_S2{dd,2+yy}=[ num2str(100.*mean(Trust(t_n)),'%3.1f') '% (' num2str(100.*min(Trust(t_n)),'%3.1f') '%' char(8211) num2str(100.*max(Trust(t_n)),'%3.1f') '%) (n = ' num2str(n) ')'];
         
         if(yy==1)
-            Table_S3{dd+length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
-            Table_S3{dd+2.*length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
+            Table_S2{dd+length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
+            Table_S2{dd+2.*length(Var_Namev),2+yy}=[char(8212) char(8212) char(8212)];
             Trust_Past=Trust;
         else
             effect_size_decrease=Trust_Past-Trust;
@@ -211,7 +211,7 @@ for dd=1:length(Var_Namev)
             lb_samp=prctile(mean_samp,2.5);
             ub_samp=prctile(mean_samp,97.5);
             
-            Table_S3{dd+length(Var_Namev),2+yy}=[ num2str(mean(p_decrease_trim),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
+            Table_S2{dd+length(Var_Namev),2+yy}=[ num2str(mean(p_decrease_trim),'%4.3f') ' (' num2str(lb_samp,'%4.3f') char(8211) num2str(ub_samp,'%4.3f') ') (n = ' num2str(n) ')'];
 
             effect_size_decrease=effect_size_decrease(t_n,:);
             
@@ -220,7 +220,7 @@ for dd=1:length(Var_Namev)
             ub_samp=prctile(100.*effect_size_decrease(:),97.5);
             
 
-            Table_S3{dd+2.*length(Var_Namev),2+yy}=[ num2str(med_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
+            Table_S2{dd+2.*length(Var_Namev),2+yy}=[ num2str(med_samp,'%3.1f') '% (' num2str(lb_samp,'%3.1f') '%' char(8211) num2str(ub_samp,'%3.1f') '%) (n = ' num2str(n) ')'];
 
             Trust_Past=Trust;
         end
@@ -266,11 +266,11 @@ for dd=1:length(Var_Namev)
     ub_samp=prctile(bs_p_decline,97.5);
     
     for yy=1:length(Yr)
-        Table_S3{dd+3.*length(Var_Namev),2+yy}=[ num2str(m_samp(yy),'%4.3f') ' (' num2str(lb_samp(yy),'%4.3f')  char(8211) num2str(ub_samp(yy),'%4.3f') ')'];
+        Table_S2{dd+3.*length(Var_Namev),2+yy}=[ num2str(m_samp(yy),'%4.3f') ' (' num2str(lb_samp(yy),'%4.3f')  char(8211) num2str(ub_samp(yy),'%4.3f') ')'];
     end
 
 end
-Table_S3=cell2table(Table_S3);
+Table_S2=cell2table(Table_S2);
 
-Table_S3.Properties.VariableNames={'Measure','Trust',['2017' char(8211) '18'],['2018' char(8211) '19'],['2019' char(8211) '20'],['2020' char(8211) '21'],['2021' char(8211) '22'],['2022' char(8211) '23']};
-writetable(Table_S3,'Tables_Supplement_Text.xlsx','Sheet','Table_S3');
+Table_S2.Properties.VariableNames={'Measure','Trust',['2017' char(8211) '18'],['2018' char(8211) '19'],['2019' char(8211) '20'],['2020' char(8211) '21'],['2021' char(8211) '22'],['2022' char(8211) '23']};
+writetable(Table_S2,'Tables_Supplement_Text.xlsx','Sheet','Table_S2');

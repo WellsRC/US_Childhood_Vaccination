@@ -27,9 +27,9 @@ for vv=1:length(Vac_Name)
     end
 end
 
-Mean_Error=zeros(4.*length(Year_Inq),1);
-Median_Error=zeros(4.*length(Year_Inq),1);
-Error_within_5=zeros(4.*length(Year_Inq),1);
+Mean_Error=cell(4.*length(Year_Inq),1);
+Median_Error=cell(4.*length(Year_Inq),1);
+Error_within_5=cell(4.*length(Year_Inq),1);
 Error_Vac=cell(4,length(Year_Inq));
 Error_Vac_County=cell(4,length(Year_Inq));
 NSamp=10^5;
@@ -45,13 +45,13 @@ for vv=1:length(Vac_Name)
         Diff_V=abs(100.*(Avg_Model_Vac_Uptake-Vac_Uptake_Data));
         Error_Vac{vv,yy}=100.*(Avg_Model_Vac_Uptake-Vac_Uptake_Data);
         Error_Vac_County{vv,yy}=County_ID(~isnan(Vac_Uptake_Data));
-        Mean_Error(yy+(vv-1).*length(Year_Inq),:)=mean(Diff_V);
-        Median_Error(yy+(vv-1).*length(Year_Inq),:)=median(Diff_V);
-        Error_within_5(yy+(vv-1).*length(Year_Inq),:)=sum(Diff_V<=5)./length(Diff_V);
+        Mean_Error{yy+(vv-1).*length(Year_Inq)}=[num2str(mean(Diff_V),'%3.2f') '%'];
+        Median_Error{yy+(vv-1).*length(Year_Inq)}=[num2str(median(Diff_V),'%3.2f') '%'];
+        Error_within_5{yy+(vv-1).*length(Year_Inq)}=[num2str(sum(Diff_V<=5)./length(Diff_V),'%4.3f')];
     end
 end
 
-T=table(Year,Vaccine,Mean_Error,Median_Error,Error_within_5);
+T=table(Vaccine,Year,Mean_Error,Median_Error,Error_within_5);
 
 writetable(T,'Tables_Supplement_Text.xlsx','Sheet','Table_S4');
 close all;

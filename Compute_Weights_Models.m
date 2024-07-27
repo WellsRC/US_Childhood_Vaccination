@@ -153,3 +153,4 @@ T_C=[table(Vaccine) cell2table(Zt)];
 T_C.Properties.VariableNames=Variables;
 
 writetable(T_C,'Supplement_Table_Model_Comparison.xlsx','Sheet','Weighted_Coefficients');
+writetable(T_C,'Tables_Supplement_Text.xlsx','Sheet','Table_S3');
