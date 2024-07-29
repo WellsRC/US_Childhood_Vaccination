@@ -53,8 +53,8 @@ Distance_Optimal_Total=sqrt(sum(([x y]-repmat(X_opt,height(T),1)).^2,2));
 
 
 %% Compute the pdf wieghts
-d=sqrt(4.*0.01./pi);
-prct_arc=0.99;
+d=sqrt(4.*0.05./pi);
+prct_arc=0.95;
 x0=linspace(-2.5,2.5,10001);
 fval=zeros(1,10001);
 for mm=1:10001
