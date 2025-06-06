@@ -1,0 +1,84 @@
+clear;
+clc;
+
+for yy=2017:2023
+    County_Data=readtable('County_Data.xlsx','Sheet',['Year_' num2str(yy)]);
+    if(yy>=2020)
+        PT=readtable([pwd '\Demographic_Data\Gridded_Population\ppp_USA_2020_1km_Aggregated_UNadj.csv']);
+    else
+        PT=readtable([pwd '\Demographic_Data\Gridded_Population\ppp_USA_' num2str(yy) '_1km_Aggregated_UNadj.csv']);
+    end
+
+    
+    PT=PT(PT.Z>0,:);
+    PT.MMR_Religious_Exemption=NaN.*zeros(height(PT),1);
+    PT.MMR_Philosophical_Exemption=NaN.*zeros(height(PT),1);
+    PT.Other_Religious_Exemption=NaN.*zeros(height(PT),1);
+    PT.Other_Philosophical_Exemption=NaN.*zeros(height(PT),1);
+    PT.Population_5_to_9=NaN.*zeros(height(PT),1);
+    PT.Population_20_to_24=NaN.*zeros(height(PT),1);
+    PT.Population_25_to_29=NaN.*zeros(height(PT),1);
+    PT.Population_30_to_34=NaN.*zeros(height(PT),1);
+    PT.Population_35_to_39=NaN.*zeros(height(PT),1);
+    PT.Population_40_to_44=NaN.*zeros(height(PT),1);
+    PT.GEOID=cell(height(PT),1);
+
+    PT.Education_Less_Grade_9=NaN.*zeros(height(PT),1);
+    PT.Education_Grade_9_12=NaN.*zeros(height(PT),1);
+    PT.Education_HS_Grad=NaN.*zeros(height(PT),1);
+    PT.Education_Some_College=NaN.*zeros(height(PT),1);
+    PT.Education_Associate_Degree=NaN.*zeros(height(PT),1);
+    PT.Education_Bachelor_Degree=NaN.*zeros(height(PT),1);
+    PT.Education_Grad_Prof_Degree=NaN.*zeros(height(PT),1);
+
+    PT.PIR_Under_50=NaN.*zeros(height(PT),1);
+    PT.PIR_50_74=NaN.*zeros(height(PT),1);
+    PT.PIR_75_99=NaN.*zeros(height(PT),1);
+    PT.PIR_100_124=NaN.*zeros(height(PT),1);
+    PT.PIR_125_149=NaN.*zeros(height(PT),1);
+    PT.PIR_150_174=NaN.*zeros(height(PT),1);
+    PT.PIR_175_184=NaN.*zeros(height(PT),1);
+    PT.PIR_185_199=NaN.*zeros(height(PT),1);
+    PT.PIR_200_299=NaN.*zeros(height(PT),1);
+    PT.PIR_300_399=NaN.*zeros(height(PT),1);
+    PT.PIR_400_499=NaN.*zeros(height(PT),1);
+    PT.PIR_500_over=NaN.*zeros(height(PT),1);
+
+    PT.Median_Income_Family=NaN.*zeros(height(PT),1);
+    
+    PT.GINI_Index=NaN.*zeros(height(PT),1);
+
+    PT.Population_White=NaN.*zeros(height(PT),1);
+    PT.Population_African_American=NaN.*zeros(height(PT),1);
+    PT.Population_AI_AN=NaN.*zeros(height(PT),1);
+    PT.Population_Asian=NaN.*zeros(height(PT),1);
+    PT.Population_NH_PI=NaN.*zeros(height(PT),1);
+
+    PT.Uninsured=NaN.*zeros(height(PT),1);
+    PT.Private_insured=NaN.*zeros(height(PT),1);
+    PT.Public_insured=NaN.*zeros(height(PT),1);
+
+    PT.Rural_Urban_Continum_Code=NaN.*zeros(height(PT),1);
+
+    County_S=shaperead([pwd '\Demographic_Data\Shapefile\cb_' num2str(yy) '_us_county_20m.shp'],'UseGeoCoords',true);
+
+
+    State_FIPc={County_S.STATEFP};
+    State_FIP=zeros(size(State_FIPc));
+    
+    for ii=1:length(State_FIP)
+        State_FIP(ii)=str2double(State_FIPc{ii});
+    end
+    
+    County_S=County_S(State_FIP~=2 & State_FIP~=15 & State_FIP<60);
+
+    for cc=1:length(County_S)
+        tf=strcmp(County_Data.GEOID,County_S(cc).GEOID);
+        [p_in,p_on]=inpolygon(PT.X,PT.Y,County_S(cc).Lon,County_S(cc).Lat);
+
+        PT.GEOID(p_in|p_on)={County_Data(tf).GEOID};
+    end
+    
+    PT=PT(~isnan(PT.Age_5_to_9),:);
+    writetable(PT,['Grid_Population_Properties_' num2str(yy) '.csv']);
+end

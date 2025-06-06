@@ -1,0 +1,372 @@
+clear;
+clc;
+
+County_T=readgeotable([pwd '\Demographic_Data\Shapefile\cb_2023_us_county_20m.shp']);
+MMR_E=readtable([pwd '\Vaccination_Data\State_Exemptions.xlsx'],'Sheet','MMR');
+Vac_E=readtable([pwd '\Vaccination_Data\State_Exemptions.xlsx'],'Sheet','Others');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% State FP Number and Name Mapping
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+State_FP_mapping=County_T(:,[2 9 10]);
+State_FP_mapping=unique(State_FP_mapping,'rows');
+
+Spatial_Stratification{1}={'ME','VT','NH','MA','RI','CT','NY','PA','NJ'};
+
+Spatial_Stratification{2}={'DE','MD','WV','VA','KY','NC','TN','AR','OK','SC','GA','AL','MS','LA','TX','FL','DC'};
+
+Spatial_Stratification{3}={'ND','MN','WI','MI','SD','IA','IL','IN','OH','NE','KS','MO'};
+
+Spatial_Stratification{4}={'WA','MT','OR','ID','WY','CA','NV','UT','CO','AZ','NM'};
+
+
+for yy=2017:2023
+    County_T=readgeotable([pwd '\Demographic_Data\Shapefile\cb_' num2str(yy) '_us_county_20m.shp']);
+    
+    State=cell(height(County_T),1);
+    STUSPS=cell(height(County_T),1);
+    
+    State_FP=County_T.STATEFP;
+    for jj=1:height(State_FP_mapping)
+        tf=strcmp(State_FP_mapping.STATEFP{jj},State_FP);
+        STUSPS(tf)={State_FP_mapping.STUSPS{jj}};
+        State(tf)={State_FP_mapping.STATE_NAME{jj}};
+    end
+    
+
+    Spatial_Identifier=zeros(height(County_T),1);
+    for ss=1:length(Spatial_Stratification)
+        tf=ismember(STUSPS,Spatial_Stratification{ss});
+        Spatial_Identifier(tf)=ss;
+    end
+
+    switch yy
+        case 2017
+            temp_val=1;
+        case 2018
+            temp_val=1;
+        case 2019
+            temp_val=2;
+        case 2020
+            temp_val=2;
+        case 2021
+            temp_val=3;
+        case 2022
+            temp_val=3;
+        case 2023
+            temp_val=3;
+    end
+    Temporal_val_ID=temp_val.*ones(height(County_T),1);
+
+    MMR_Religious_Exemption=NaN.*zeros(height(County_T),1);
+    MMR_Philosophical_Exemption=NaN.*zeros(height(County_T),1);
+    Other_Religious_Exemption=NaN.*zeros(height(County_T),1);
+    Other_Philosophical_Exemption=NaN.*zeros(height(County_T),1);
+    if(yy<2023)
+        for jj=1:height(MMR_E)
+            tf=MMR_E.State_FIPs(jj)==[str2double(State_FP)];
+            MMR_Religious_Exemption(tf)=MMR_E.(['Religious_' num2str(yy)])(jj);
+            MMR_Philosophical_Exemption(tf)=MMR_E.(['Philosophical_' num2str(yy)])(jj);
+            Other_Religious_Exemption(tf)=Vac_E.(['Religious_' num2str(yy)])(jj);
+            Other_Philosophical_Exemption(tf)=Vac_E.(['Philosophical_' num2str(yy)])(jj);
+        end
+    else
+        for jj=1:height(MMR_E)
+            tf=MMR_E.State_FIPs(jj)==[str2double(State_FP)];
+            MMR_Religious_Exemption(tf)=MMR_E.(['Religious_2022'])(jj);
+            MMR_Philosophical_Exemption(tf)=MMR_E.(['Philosophical_2022'])(jj);
+            Other_Religious_Exemption(tf)=Vac_E.(['Religious_2022'])(jj);
+            Other_Philosophical_Exemption(tf)=Vac_E.(['Philosophical_2022'])(jj);
+        end
+    end
+    County=County_T.NAME;
+    County_FP=County_T.COUNTYFP;
+    GEOID=County_T.GEOID;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Age of population
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Age_Sex\ACSST5Y' num2str(yy) '.S0101-Data.csv']);
+    Census_Pop_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Pop_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Total_Pop=Census_Data.S0101_C01_001E;
+    Census_5_to_9=Census_Data.S0101_C01_003E./Census_Total_Pop;
+    Census_20_to_24=Census_Data.S0101_C01_006E./Census_Total_Pop;
+    Census_25_to_29=Census_Data.S0101_C01_007E./Census_Total_Pop;
+    Census_30_to_34=Census_Data.S0101_C01_008E./Census_Total_Pop;
+    Census_35_to_39=Census_Data.S0101_C01_009E./Census_Total_Pop;
+    Census_40_to_44=Census_Data.S0101_C01_010E./Census_Total_Pop;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Health Insurance
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Health_Insurance\ACSST5Y' num2str(yy) '.S2701-Data.csv']);
+    Census_Health_Insurance_Uninsured_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Health_Insurance_Uninsured_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Total_Under_19=Census_Data.S2701_C01_002E+Census_Data.S2701_C01_003E;
+    Census_Uninsured=(Census_Data.S2701_C04_002E+Census_Data.S2701_C04_003E)./Census_Total_Under_19;
+
+    Census_Data=readtable([pwd '\Demographic_Data\Health_Insurance\ACSST5Y' num2str(yy) '.S2703-Data.csv']);
+    Census_Health_Insurance_Private_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Health_Insurance_Private_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Total_Under_19=Census_Data.S2703_C01_003E+Census_Data.S2703_C01_007E+Census_Data.S2703_C01_011E;
+    Census_Private=(Census_Data.S2703_C02_003E+Census_Data.S2703_C02_007E+Census_Data.S2703_C02_011E)./Census_Total_Under_19;
+
+    Census_Data=readtable([pwd '\Demographic_Data\Health_Insurance\ACSST5Y' num2str(yy) '.S2704-Data.csv']);
+    Census_Health_Insurance_Public_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Health_Insurance_Public_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Total_Under_19=Census_Data.S2704_C01_003E+Census_Data.S2704_C01_007E+Census_Data.S2704_C01_011E;
+    Census_Public=(Census_Data.S2704_C02_003E+Census_Data.S2704_C02_007E+Census_Data.S2704_C02_011E)./Census_Total_Under_19;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Race
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Race\ACSDT5Y' num2str(yy) '.B02001-Data.csv']);
+    Census_Race_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Race_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Total_White=Census_Data.B02001_002E;
+    Census_Total_African_American=Census_Data.B02001_003E;
+    Census_Total_AI_AN=Census_Data.B02001_004E;
+    Census_Total_Asian=Census_Data.B02001_005E;
+    Census_Total_NH_PI=Census_Data.B02001_006E;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Household Income
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Household_Income\ACSST5Y' num2str(yy) '.S1903-Data.csv']);
+    Census_Income_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Income_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Median_Income_Family=Census_Data.S1903_C03_015E;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Gini index
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\GINI_Index\ACSDT5Y' num2str(yy) '.B19083-Data.csv']);
+    Census_GINI_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_GINI_GEOID{jj}=temp(end-4:end);
+    end
+    Census_GINI=Census_Data.B19083_001E;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Rural_Urban_Continum_Code
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if(yy<2022) % Based on changes to CT county
+        Census_Data=readtable([pwd '\Demographic_Data\Rural_Urban_Continum_Codes\ruralurbancodes2013.xls']);
+
+        Census_RUCC_GEOID=Census_Data.FIPS;
+        Census_RUCC=Census_Data.RUCC_2013;
+    else
+        Census_Data=readtable([pwd '\Demographic_Data\Rural_Urban_Continum_Codes\Ruralurbancontinuumcodes2023.xlsx']);
+        
+        Census_RUCC_GEOID=Census_Data.FIPS;
+        Census_RUCC=Census_Data.RUCC_2023;
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Poverty Income Ratio
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Poverty_Income_Ratio\ACSDT5Y' num2str(yy) '.B17026-Data.csv']);
+    Census_PIR_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_PIR_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Under_50=Census_Data.B17026_002E;
+    Census_50_74=Census_Data.B17026_003E;
+    Census_75_99=Census_Data.B17026_004E;
+    Census_100_124=Census_Data.B17026_005E;
+    Census_125_149=Census_Data.B17026_006E;
+    Census_150_174=Census_Data.B17026_007E;
+    Census_175_184=Census_Data.B17026_008E;
+    Census_185_199=Census_Data.B17026_009E;
+    Census_200_299=Census_Data.B17026_010E;
+    Census_300_399=Census_Data.B17026_011E;
+    Census_400_499=Census_Data.B17026_012E;
+    Census_500_over=Census_Data.B17026_013E;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Education
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    Census_Data=readtable([pwd '\Demographic_Data\Education\ACSST5Y' num2str(yy) '.S1501-Data.csv']);
+    Census_Education_GEOID=cell(height(Census_Data),1);
+    for jj=1:height(Census_Data)
+        temp=Census_Data.GEO_ID{jj};
+        Census_Education_GEOID{jj}=temp(end-4:end);
+    end
+    Census_Education_25_plus=Census_Data.S1501_C01_006E;
+    Census_Education_Less_Grade_9=Census_Data.S1501_C01_007E./Census_Education_25_plus;
+    Census_Education_Grade_9_12=Census_Data.S1501_C01_008E./Census_Education_25_plus;
+    Census_Education_HS_Grad=Census_Data.S1501_C01_009E./Census_Education_25_plus;
+    Census_Education_Some_College=Census_Data.S1501_C01_010E./Census_Education_25_plus;
+    Census_Education_Associate_Degree=Census_Data.S1501_C01_011E./Census_Education_25_plus;
+    Census_Education_Bachelor_Degree=Census_Data.S1501_C01_012E./Census_Education_25_plus;
+    Census_Education_Grad_Prof_Degree=Census_Data.S1501_C01_013E./Census_Education_25_plus;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Combine data
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    MMR=cell(height(County_T),1);
+    DTaP=cell(height(County_T),1);
+    POLIO=cell(height(County_T),1);
+    VAR=cell(height(County_T),1);
+
+    Education_Less_Grade_9=NaN.*zeros(height(County_T),1);
+    Education_Grade_9_12=NaN.*zeros(height(County_T),1);
+    Education_HS_Grad=NaN.*zeros(height(County_T),1);
+    Education_Some_College=NaN.*zeros(height(County_T),1);
+    Education_Associate_Degree=NaN.*zeros(height(County_T),1);
+    Education_Bachelor_Degree=NaN.*zeros(height(County_T),1);
+    Education_Grad_Prof_Degree=NaN.*zeros(height(County_T),1);
+
+    PIR_Under_50=NaN.*zeros(height(County_T),1);
+    PIR_50_74=NaN.*zeros(height(County_T),1);
+    PIR_75_99=NaN.*zeros(height(County_T),1);
+    PIR_100_124=NaN.*zeros(height(County_T),1);
+    PIR_125_149=NaN.*zeros(height(County_T),1);
+    PIR_150_174=NaN.*zeros(height(County_T),1);
+    PIR_175_184=NaN.*zeros(height(County_T),1);
+    PIR_185_199=NaN.*zeros(height(County_T),1);
+    PIR_200_299=NaN.*zeros(height(County_T),1);
+    PIR_300_399=NaN.*zeros(height(County_T),1);
+    PIR_400_499=NaN.*zeros(height(County_T),1);
+    PIR_500_over=NaN.*zeros(height(County_T),1);
+
+    Median_Income_Family=NaN.*zeros(height(County_T),1);
+    
+    GINI_Index=NaN.*zeros(height(County_T),1);
+
+    Total_Population=NaN.*zeros(height(County_T),1);
+    Population_5_to_9=NaN.*zeros(height(County_T),1);
+    Population_20_to_24=NaN.*zeros(height(County_T),1);
+    Population_25_to_29=NaN.*zeros(height(County_T),1);
+    Population_30_to_34=NaN.*zeros(height(County_T),1);
+    Population_35_to_39=NaN.*zeros(height(County_T),1);
+    Population_40_to_44=NaN.*zeros(height(County_T),1);
+
+    Population_White=NaN.*zeros(height(County_T),1);
+    Population_African_American=NaN.*zeros(height(County_T),1);
+    Population_AI_AN=NaN.*zeros(height(County_T),1);
+    Population_Asian=NaN.*zeros(height(County_T),1);
+    Population_NH_PI=NaN.*zeros(height(County_T),1);
+
+    Uninsured=NaN.*zeros(height(County_T),1);
+    Private_insured=NaN.*zeros(height(County_T),1);
+    Public_insured=NaN.*zeros(height(County_T),1);
+
+    Rural_Urban_Continum_Code=NaN.*zeros(height(County_T),1);
+
+    for jj=1:height(County_T)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        % Population
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        t_pop=strcmp(GEOID{jj},Census_Pop_GEOID);
+        Total_Population(jj)=Census_Total_Pop(t_pop);
+        Population_5_to_9(jj)=Census_5_to_9(t_pop);
+        Population_20_to_24(jj)=Census_20_to_24(t_pop);
+        Population_25_to_29(jj)=Census_25_to_29(t_pop);
+        Population_30_to_34(jj)=Census_30_to_34(t_pop);
+        Population_35_to_39(jj)=Census_35_to_39(t_pop);
+        Population_40_to_44(jj)=Census_40_to_44(t_pop);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        % Race
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        tf=strcmp(GEOID{jj},Census_Race_GEOID);
+        Population_White(jj)=Census_Total_White(tf)./Census_Total_Pop(t_pop);
+        Population_African_American(jj)=Census_Total_African_American(tf)./Census_Total_Pop(t_pop);
+        Population_AI_AN(jj)=Census_Total_AI_AN(tf)./Census_Total_Pop(t_pop);
+        Population_Asian(jj)=Census_Total_Asian(tf)./Census_Total_Pop(t_pop);
+        Population_NH_PI(jj)=Census_Total_NH_PI(tf)./Census_Total_Pop(t_pop);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Education
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_Education_GEOID);
+        Education_Less_Grade_9(jj)=Census_Education_Less_Grade_9(tf);
+        Education_Grade_9_12(jj)=Census_Education_Grade_9_12(tf);
+        Education_HS_Grad(jj)=Census_Education_HS_Grad(tf);
+        Education_Some_College(jj)=Census_Education_Some_College(tf);
+        Education_Associate_Degree(jj)=Census_Education_Associate_Degree(tf);
+        Education_Bachelor_Degree(jj)=Census_Education_Bachelor_Degree(tf);
+        Education_Grad_Prof_Degree(jj)=Census_Education_Grad_Prof_Degree(tf);
+    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Income
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_Income_GEOID);
+        Median_Income_Family(jj)=Census_Median_Income_Family(tf);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % GINI 
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_GINI_GEOID);
+        GINI_Index(jj)=Census_GINI(tf);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Insurance
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_Health_Insurance_Uninsured_GEOID);
+        Uninsured(jj)=Census_Uninsured(tf);
+
+        tf=strcmp(GEOID{jj},Census_Health_Insurance_Private_GEOID);
+        Private_insured(jj)=Census_Private(tf);
+
+        tf=strcmp(GEOID{jj},Census_Health_Insurance_Public_GEOID);
+        Public_insured(jj)=Census_Public(tf);
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % RUCC
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_RUCC_GEOID);
+        if(sum(tf)>0)
+            Rural_Urban_Continum_Code(jj)=Census_RUCC(tf);
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Poverty Income Ratio
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        tf=strcmp(GEOID{jj},Census_PIR_GEOID);
+        PIR_Under_50(jj)=Census_Under_50(tf)./Census_Total_Pop(t_pop);
+        PIR_50_74(jj)=Census_50_74(tf)./Census_Total_Pop(t_pop);
+        PIR_75_99(jj)=Census_75_99(tf)./Census_Total_Pop(t_pop);
+        PIR_100_124(jj)=Census_100_124(tf)./Census_Total_Pop(t_pop);
+        PIR_125_149(jj)=Census_125_149(tf)./Census_Total_Pop(t_pop);
+        PIR_150_174(jj)=Census_150_174(tf)./Census_Total_Pop(t_pop);
+        PIR_175_184(jj)=Census_175_184(tf)./Census_Total_Pop(t_pop);
+        PIR_185_199(jj)=Census_185_199(tf)./Census_Total_Pop(t_pop);
+        PIR_200_299(jj)=Census_200_299(tf)./Census_Total_Pop(t_pop);
+        PIR_300_399(jj)=Census_300_399(tf)./Census_Total_Pop(t_pop);
+        PIR_400_499(jj)=Census_400_499(tf)./Census_Total_Pop(t_pop);
+        PIR_500_over(jj)=Census_500_over(tf)./Census_Total_Pop(t_pop);
+
+    end
+    T=table(State,County,Spatial_Identifier,Temporal_val_ID,STUSPS,State_FP,County_FP,GEOID,MMR,DTaP,POLIO,VAR,MMR_Religious_Exemption,MMR_Philosophical_Exemption,Other_Religious_Exemption,Other_Philosophical_Exemption,Total_Population,Population_5_to_9,Population_20_to_24,Population_25_to_29,Population_30_to_34,Population_35_to_39,Population_40_to_44,Population_White,Population_African_American,Population_AI_AN,Population_Asian,Population_NH_PI,Median_Income_Family,GINI_Index,Uninsured,Private_insured,Public_insured,Education_Less_Grade_9,Education_Grade_9_12,Education_HS_Grad,Education_Some_College,Education_Associate_Degree,Education_Bachelor_Degree,Education_Grad_Prof_Degree,PIR_Under_50,PIR_50_74,PIR_75_99,PIR_100_124,PIR_125_149,PIR_150_174,PIR_175_184,PIR_185_199,PIR_200_299,PIR_300_399,PIR_400_499,PIR_500_over,Rural_Urban_Continum_Code);
+
+    writetable(T,'County_Data.xlsx','Sheet',['Year_' num2str(yy)]);
+end

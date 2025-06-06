@@ -1,0 +1,50 @@
+% function Cluster_Temporal_Coverage(Vac)
+% clear;
+% clc;
+% 
+% Vac='MMR';
+% load(['Likelihood_Clusters_2023_' Vac '.mat'],'est_r','lat_c','lon_c','lambda');
+
+% [~,indx_cluster]=sort(lambda(:,1),'descend');
+% lat_c=lat_c(indx_cluster);
+% lon_c=lon_c(indx_cluster);
+% lambda=lambda(indx_cluster,:);
+% est_r=est_r(indx_cluster);
+% 
+% lat=lat_c(1:10);
+% lon=lon_c(1:10);
+% Radius=est_r(1:10);
+
+% Yr=[2017:2023];
+% Vaccination_Coverage=zeros(10,length(Yr));
+% 
+% load('Cluster_Center_Radius_2023.mat','r','lat_c','lon_c');
+% r_indx=randsample(length(r),10);
+% Radius=rand(10,1).*r(r_indx);
+% lat=lat_c(r_indx);
+% lon=lon_c(r_indx);
+% 
+% for yy=2017:2023
+%     Grid_Data=readtable([pwd '\Spatial_Data\Age_5_to_9_Grid_' num2str(yy) '.csv']);
+% 
+%      % Determine the number of unaccinatd individuals in eac hgrid point
+%     if(strcmp(Vac,'MMR'))
+%         Number_Vaccinated=Grid_Data.Age_5_to_9.*(Grid_Data.MMR_Vaccine_Uptake);
+%     end
+%     Total_Population=Grid_Data.Age_5_to_9;
+%     for cc=1:10
+%         d=deg2sm(distance(Grid_Data.Y,Grid_Data.X,lat(cc),lon(cc)));
+%         Vaccination_Coverage(cc,yy-2016)=round(100.*sum(Number_Vaccinated(d<=Radius(cc)))./sum(Total_Population(d<=Radius(cc))),1);
+%     end
+% end
+close all;
+
+figure('units','normalized','outerposition',[0.1 0.2 0.8 0.6])
+
+subplot('Position',[0.075 0.135 0.9 0.85])
+plot(Yr,Vaccination_Coverage,'-o','LineWidth',2)
+set(gca,'tickdir','out','Fontsize',16,'Xtick',Yr,'LineWidth',2)
+ytickformat('percentage');
+box off;
+xlabel('School year','FontSize',16)
+ylabel('Vaccine uptake','FontSize',16)

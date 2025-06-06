@@ -1,0 +1,98 @@
+clear;
+clc;
+
+rng(20250506)
+
+[County_Data,State_Data] = Load_Data('MMR');
+
+county_data_indx=find(~isnan(County_Data.Vaccine_Uptake));
+p_county=randperm(length(county_data_indx));
+K_fold_county=cell(10,1);
+
+for ii=1:10
+    if(ii<10)
+        K_fold_county{ii}=county_data_indx(p_county([1:ceil(length(county_data_indx)/10)]+ceil(length(county_data_indx)/10).*(ii-1)));
+    else
+        K_fold_county{ii}=county_data_indx(p_county(1+ceil(length(county_data_indx)/10).*(ii-1):end));
+    end
+end
+
+state_data_indx=1:height(State_Data);
+p_state=randperm(length(state_data_indx));
+K_fold_state=cell(10,1);
+
+for ii=1:10
+    if(ii<10)
+        K_fold_state{ii}=p_state([1:ceil(length(state_data_indx)/10)]+ceil(length(state_data_indx)/10).*(ii-1));
+    else
+        K_fold_state{ii}=p_state(1+ceil(length(state_data_indx)/10).*(ii-1):end);
+    end
+end
+
+
+Model_Var=false(2^7,44);
+
+Model_Var(:,[1 2])=true;
+
+temp_var=false(7,44);
+temp_var(1,3:7)=true;
+temp_var(2,8:12)=true;
+temp_var(3,13)=true;
+temp_var(4,14:16)=true;
+temp_var(5,17:23)=true;
+temp_var(6,24:35)=true;
+temp_var(7,36:44)=true;
+
+bin_model=dec2bin([0:2^7-1]',7)=='1';
+[~,srt_indx]=sort(sum(bin_model,2),'ascend');
+bin_model=bin_model(srt_indx,:);
+
+for ii=1:2^7
+    temp_overall=false(1,44);
+    for jj=1:7
+        if(bin_model(ii,jj))
+            temp_overall=temp_overall|temp_var(jj,:);
+        end
+    end
+    Model_Var(ii,:)=Model_Var(ii,:) | temp_overall;
+end
+
+model_par=cell(2^7,10);
+L_fit=zeros(2^7,10);
+L_val=zeros(2^7,10);
+for kk=1:10
+    K_fold_county_it=K_fold_county(setdiff(1:10,kk));
+    K_fold_state_it=K_fold_state(setdiff(1:10,kk));
+    
+    K_fold_county_it=[K_fold_county_it{:}];
+    K_fold_state_it=[K_fold_state_it{:}];
+    
+    K_fold_county_val=[K_fold_county{kk}];
+    K_fold_state_val=[K_fold_county{kk}];
+    
+    for model_num=1:2^7
+        County_Data_model=County_Data;
+        County_Data_model.X=County_Data_model.X(:,Model_Var(model_num,:));
+    
+        lb=-20.*ones(1,sum(Model_Var(model_num,:))+3);
+        lb(end-1:end)=-1;
+        ub=20.*ones(1,sum(Model_Var(model_num,:))+3);
+        ub(end-1:end)=1;
+    
+        opts_ps=optimoptions('particleswarm','MaxIterations',300,'FunctionTolerance',10^(-6),'PlotFcn','pswplotbestf','UseParallel',true);
+        par_0=zeros(10,length(lb));
+        for ss=1:10
+            par_0(ss,:)=particleswarm(@(x)Objective_Function_Coverage(x,County_Data_model,State_Data,K_fold_county_it,K_fold_state_it),length(lb),lb,ub,opts_ps);
+        end
+        
+        opts_ga=optimoptions('ga','FunctionTolerance',10^(-8),'InitialPopulationMatrix',par_0,'PlotFcn','gaplotbestf','UseParallel',true);
+        [par_est]=ga(@(x)Objective_Function_Coverage(x,County_Data_model,State_Data,K_fold_county_it,K_fold_state_it),length(lb),[],[],[],[],lb,ub,[],[],opts_ga);
+    
+        opts_pats=optimoptions('patternsearch','FunctionTolerance',10^(-9),'PlotFcn','psplotbestf','UseParallel',true);
+        [par_final,f_final]=patternsearch(@(x)Objective_Function_Coverage(x,County_Data_model,State_Data,K_fold_county_it,K_fold_state_it),par_est,[],[],[],[],lb,ub,[],opts_pats);
+    
+        model_par{model_num,kk}=par_final;
+        L_fit(model_num,kk)=-f_final;
+        L_val(model_num,kk)=-Objective_Function_Coverage(par_final,County_Data_model,State_Data,K_fold_county_val,K_fold_state_val);
+    end
+end
